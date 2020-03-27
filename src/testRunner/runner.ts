@@ -138,64 +138,65 @@ namespace Harness {
                 if (testConfig.runners) {
                     runUnitTests = runnerConfig.indexOf("unittest") !== -1;
                 }
-                // for (const option of runnerConfig) {
-                //     if (!option) {
-                //         continue;
-                //     }
+                for (const option of runnerConfig) {
+                    if (!option) {
+                        continue;
+                    }
 
-                //     if (!configOption) {
-                //         configOption = option;
-                //     }
-                //     else {
-                //         configOption += "+" + option;
-                //     }
+                    if (!configOption) {
+                        configOption = option;
+                    }
+                    else {
+                        configOption += "+" + option;
+                    }
 
-                //     switch (option) {
-                //         case "compiler":
-                //             runners.push(new CompilerBaselineRunner(CompilerTestType.Conformance));
-                //             runners.push(new CompilerBaselineRunner(CompilerTestType.Regressions));
-                //             break;
-                //         case "conformance":
-                //             runners.push(new CompilerBaselineRunner(CompilerTestType.Conformance));
-                //             break;
-                //         case "project":
-                //             runners.push(new project.ProjectRunner());
-                //             break;
-                //         case "fourslash":
-                //             runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Native));
-                //             break;
-                //         case "fourslash-shims":
-                //             runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Shims));
-                //             break;
-                //         case "fourslash-shims-pp":
-                //             runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.ShimsWithPreprocess));
-                //             break;
-                //         case "fourslash-server":
-                //             runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Server));
-                //             break;
-                //         case "fourslash-generated":
-                //             runners.push(new GeneratedFourslashRunner(FourSlash.FourSlashTestType.Native));
-                //             break;
-                //         case "rwc":
-                //             runners.push(new RWC.RWCRunner());
-                //             break;
-                //         case "test262":
-                //             runners.push(new Test262BaselineRunner());
-                //             break;
-                //         case "user":
-                //             runners.push(new UserCodeRunner());
-                //             break;
-                //         case "dt":
-                //             runners.push(new DefinitelyTypedRunner());
-                //             break;
-                //         case "docker":
-                //             runners.push(new DockerfileRunner());
-                //             break;
-                //     }
-                // }
+                    switch (option) {
+                        case "compiler":
+                            runners.push(new CompilerBaselineRunner(CompilerTestType.Conformance));
+                            runners.push(new CompilerBaselineRunner(CompilerTestType.Regressions));
+                            break;
+                        case "conformance":
+                            runners.push(new CompilerBaselineRunner(CompilerTestType.Conformance));
+                            break;
+                        case "project":
+                            runners.push(new project.ProjectRunner());
+                            break;
+                        case "fourslash":
+                            runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Native));
+                            break;
+                        case "fourslash-shims":
+                            runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Shims));
+                            break;
+                        case "fourslash-shims-pp":
+                            runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.ShimsWithPreprocess));
+                            break;
+                        case "fourslash-server":
+                            runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Server));
+                            break;
+                        case "fourslash-generated":
+                            runners.push(new GeneratedFourslashRunner(FourSlash.FourSlashTestType.Native));
+                            break;
+                        case "rwc":
+                            runners.push(new RWC.RWCRunner());
+                            break;
+                        case "test262":
+                            runners.push(new Test262BaselineRunner());
+                            break;
+                        case "user":
+                            runners.push(new UserCodeRunner());
+                            break;
+                        case "dt":
+                            runners.push(new DefinitelyTypedRunner());
+                            break;
+                        case "docker":
+                            runners.push(new DockerfileRunner());
+                            break;
+                    }
+                }
             }
         }
 
+        runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Server));
         // if (runners.length === 0) {
         //     // compiler
         //     runners.push(new CompilerBaselineRunner(CompilerTestType.Conformance));
