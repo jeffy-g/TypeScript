@@ -1,29 +1,26 @@
-// ^(?:                # non-capturing group $1
-//   \s*               # has whitespace ahead?
-//   (?:               # non-capturing group $2
-//     [*\s]+(?=\s+) # A string that is a mixture of "*" and whitespace terminated by one or more whitespaces
-//   )?\s+             # adjust for previous anchor
-//   |                 # or
-//   \s*\/\*\*\s+      # e.g - " /** "
-// )                   # end non-capturing group $1
-// (
-//   @                 # has triggerCharacter? (capturing group $1)
-// )?$
+// summary of /^\s*(?:[*\s]+(?=\s)|\/\*\*)?\s+(@)?$/
+// ^              # start of string
+// \s*            # has whitespace ahead?
+// (?:            # non-capturing group $1
+//   [*\s]+(?=\s) # A string that is a mixture of "*" and whitespace terminated by one or more whitespaces
+//   |            # or
+//   \/\*\*       # jsdoc start "/**"
+// )?\s+          # end non-capturing group $1
+// (@)?           # has triggerCharacter? (capturing group $1)
+// $              # end of string
 
-// https://regex101.com/r/Qe4Mqs/3
+// https://regex101.com/r/Qe4Mqs/4
 /**
  * ```php
- *^(?:              # non-capturing group $1
- *  \s*             # has whitespace ahead?
- *  (?:             # non-capturing group $2
- *    [*\s]+(?=\s)  # A string that is a mixture of "*" and whitespace terminated by one or more whitespaces
- *  )?\s+           # adjust for previous anchor (end non-capturing group $2)
- *  |               # or
- *  \s*\/\*\*\s+    # e.g - [ /** ]
- *)                 # end non-capturing group $1
- *(
- *  @               # has triggerCharacter? (capturing group $1)
- *)?$
+ *^              # start of string
+ *\s*            # has whitespace ahead?
+ *(?:            # non-capturing group $1
+ *  [*\s]+(?=\s) # A string that is a mixture of "*" and whitespace terminated by one or more whitespaces
+ *  |            # or
+ *  \/\*\*       # jsdoc start "/**"
+ *)?\s+          # end non-capturing group $1
+ *(@)?           # has triggerCharacter? (capturing group $1)
+ *$              # end of string
  * ```
  */
-const re = /^(?:\s*(?:[*\s]+(?=\s+))?\s+|\s*\/\*\*\s+)(@)?$/;
+const re = /^\s*(?:[*\s]+(?=\s)|\/\*\*)?\s+(@)?$/;

@@ -13,6 +13,17 @@
 
 // gulp runtests --runners=fourslash-server
 
+// summary of /^\s*(?:[*\s]+(?=\s)|\/\*\*)?\s+(@)?$/
+// ^              # start of string
+// \s*            # has whitespace ahead?
+// (?:            # non-capturing group $1
+//   [*\s]+(?=\s) # A string that is a mixture of "*" and whitespace terminated by one or more whitespaces
+//   |            # or
+//   \/\*\*       # jsdoc start "/**"
+// )?\s+          # end non-capturing group $1
+// (@)?           # has triggerCharacter? (capturing group $1)
+// $              # end of string
+
 
 /////**
 //// +/*1*/
@@ -20,10 +31,8 @@
 ////function a0(s: string) {}
 ////
 
-// gulp runtests --runners=fourslash-server
-
 /**
- ** * 
+ *
  */
 const jsDocTagNames = [
     "abstract",        "access",          "alias",           "argument",        "async",           "augments",        "author",          "borrows",         "callback",        "class",
@@ -35,39 +44,49 @@ const jsDocTagNames = [
     "returns",         "see",             "since",           "static",          "summary",         "template",        "this",            "throws",          "todo",            "tutorial",
     "type",            "typedef",         "var",             "variation",       "version",         "virtual",         "yields"
 ];
-// const jsDocTags = jsDocTagNames.map(name => "@" + name);
+const jsDocTags = jsDocTagNames.map(name => "@" + name);
 
 
-// line 2: [ +|c|]
+// ℹ️ line 2: [ +|c|]
 verify.completions({
     marker: "1",
-    exact: undefined // or []
+    exact: [] // or undefined
 });
 
-// line 2: [ +|c|] ->  [ +@|c|]
+// ℹ️ line 2: [ +|c|] -> [ +@|c|]
 // before the fix, jsdoc tag names was listed but no longer appears
 edit.insert("@");
 verify.completions({
+    marker: "1",
     exact: undefined
 });
 
-// line 2: [ +@|c|] -> [ *|c|]
+// ℹ️ line 2: [ +@|c|] -> [ *|c|]
 // before the fix, jsdoc tags was listed but no longer appears
 edit.replaceLine(1, " *");
+// goTo.position({ line: 1, character: 2 });
 verify.completions({
+    // marker: "1", // marker is not available
     exact: undefined
 });
 
-// line 2: [ *|c|] -> [ * |c|]
-// jsdoc tags are listed when there is more than one whitespace after "*"
-edit.insert(" ");
+// ℹ️ line 2: [ *|c|] -> [ *@|c|]
+// this behavior does not by "hasDocComment" section
+edit.insert("@");
 verify.completions({
-    includes: ["@abstract"]
+    includes: jsDocTagNames
 });
 
-// line 2: [ * |c|] -> [ * @|c|]
+// ℹ️ line 2: [ *@|c|] -> [ * |c|]
+// jsdoc tags are listed when there is more than one whitespace after "*"
+edit.replaceLine(1, " * ");
+verify.completions({
+    includes: jsDocTags
+});
+
+// ℹ️ line 2: [ * |c|] -> [ * @|c|]
 // jsdoc tag names will be listed
 edit.insert("@");
 verify.completions({
-    includes: ["abstract"]
+    includes: jsDocTagNames
 });
