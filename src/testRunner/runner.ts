@@ -196,7 +196,12 @@ namespace Harness {
             }
         }
 
-        runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Server));
+        if (runners.length === 0) {
+            // "fourslash-server"
+            // runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Server));
+            // "fourslash"
+            runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Native));
+        }
         // if (runners.length === 0) {
         //     // compiler
         //     runners.push(new CompilerBaselineRunner(CompilerTestType.Conformance));
