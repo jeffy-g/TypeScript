@@ -855,7 +855,7 @@ namespace ts.Completions {
                 // When completion is requested without "@", we will have check to make sure that
                 // there are no comments prefix the request position. We will only allow "*" and space.
                 // e.g
-                //   /** |c| /*
+                //   /** |c| */
                 //
                 //   /**
                 //     |c|
@@ -868,18 +868,47 @@ namespace ts.Completions {
                 //   /**
                 //    *         |c|
                 //    */
+                /* https://coderwall.com/p/zbc2zw/the-comment-toggle-trick
+                if (sourceFile.text.charCodeAt(position - 1) === CharacterCodes.at) {
+                    // The current position is next to the '@' sign, when no tag name being provided yet.
+                    // Provide a full list of tag names
+                    return { kind: CompletionDataKind.JsDocTagName };
+                }
+                else {
+                    const lineStart = getLineStartPositionForPosition(position, sourceFile);
+                    if (!(sourceFile.text.substring(lineStart, position).match(/[^\*|\s|(/\*\*)]/))) {
+                        return { kind: CompletionDataKind.JsDocTag };
+                    }
+                }
+                /*/
                 const lineStart = getLineStartPositionForPosition(position, sourceFile);
-                // jsdoc tag will be listed if there is more than one whitespace after "*"
-                const m = /^\s*(?:[*\s]+(?=\s)|\/\*\*)?\s+(@)?$/.exec(
-                    sourceFile.text.substring(lineStart, position)
-                );
-                if (m) {
+                const jsdocFragment = sourceFile.text.substring(lineStart, position);
+                const match =
+                    // Support for inline jsdoc tag (for @link etc)
+                    /^(?!.*@\w+).+?\{\s*(@)?$/.exec(jsdocFragment) ||
+                    // or jsdoc tag will be listed if there is more than one whitespace after "*"
+                    /^(?:\s*\/\*\*|[*\s]+(?=\s))?\s+(@)?$/.exec(jsdocFragment);
+
+                if (match) {
                     return {
                         // The current position is next to the '@' sign, when no tag name being provided yet.
                         // Provide a full list of tag names
-                        kind: m[1]/* === "@"*/? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
+                        kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
                     };
                 }
+                // let match = /^(?!.*@\w+).+?\{\s*(@)?$/.exec(jsdocFragment);
+                // if (match) {
+                //     return {
+                //         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
+                //     };
+                // }
+                // match = /^(?:\s*\/\*\*|[*\s]+(?=\s))?\s+(@)?$/.exec(jsdocFragment);
+                // if (match) {
+                //     return {
+                //         kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
+                //     };
+                // }
+                //*/
             }
 
             // Completion should work inside certain JsDoc tags. For example:
