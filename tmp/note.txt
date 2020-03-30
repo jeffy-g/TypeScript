@@ -1,6 +1,0 @@
-[direct test of "mocha"]
-npx mocha -R scripts/failed-tests -O "reporter=mocha-fivemat-progress-reporter" --colors -t 40000 built/local/run.js
-
-[write response data as JSON]
-Harness.IO.writeFile("./response-0.json", JSON.stringify(response));
-
