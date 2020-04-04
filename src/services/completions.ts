@@ -876,6 +876,12 @@ namespace ts.Completions {
                 }
                 else {
                     const lineStart = getLineStartPositionForPosition(position, sourceFile);
+                    // if (
+                    //     // by "/[^/\s\*]/", it becomes an correct regex (But that doesn't work as expected
+                    //     !/[^/\s\*]/.test(sourceFile.text.substring(lineStart, position))
+                    // ) {
+                    //     return { kind: CompletionDataKind.JsDocTag };
+                    // }
                     if (!(sourceFile.text.substring(lineStart, position).match(/[^\*|\s|(/\*\*)]/))) {
                         return { kind: CompletionDataKind.JsDocTag };
                     }
