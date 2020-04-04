@@ -197,31 +197,25 @@ namespace Harness {
         }
 
         if (runners.length === 0) {
-            // "fourslash-server"
-            // runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Server));
-            // "fourslash"
+            // compiler
+            runners.push(new CompilerBaselineRunner(CompilerTestType.Conformance));
+            runners.push(new CompilerBaselineRunner(CompilerTestType.Regressions));
+
+            runners.push(new project.ProjectRunner());
+
+            // language services
             runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Native));
+            runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Shims));
+            runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.ShimsWithPreprocess));
+            runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Server));
+            // runners.push(new GeneratedFourslashRunner());
+
+            // CRON-only tests
+            if (process.env.TRAVIS_EVENT_TYPE === "cron") {
+                runners.push(new UserCodeRunner());
+                runners.push(new DockerfileRunner());
+            }
         }
-        // if (runners.length === 0) {
-        //     // compiler
-        //     runners.push(new CompilerBaselineRunner(CompilerTestType.Conformance));
-        //     runners.push(new CompilerBaselineRunner(CompilerTestType.Regressions));
-
-        //     runners.push(new project.ProjectRunner());
-
-        //     // language services
-        //     runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Native));
-        //     runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Shims));
-        //     runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.ShimsWithPreprocess));
-        //     runners.push(new FourSlashRunner(FourSlash.FourSlashTestType.Server));
-        //     // runners.push(new GeneratedFourslashRunner());
-
-        //     // CRON-only tests
-        //     if (process.env.TRAVIS_EVENT_TYPE === "cron") {
-        //         runners.push(new UserCodeRunner());
-        //         runners.push(new DockerfileRunner());
-        //     }
-        // }
         if (runUnitTests === undefined) {
             runUnitTests = runners.length !== 1; // Don't run unit tests when running only one runner if unit tests were not explicitly asked for
         }
