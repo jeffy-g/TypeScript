@@ -1,86 +1,33 @@
 /* @internal */
 namespace ts.JsDoc {
     const jsDocTagNames = [
-        "abstract",
-        "access",
-        "alias",
-        "argument",
-        "async",
-        "augments",
-        "author",
-        "borrows",
-        "callback",
-        "class",
-        "classdesc",
-        "constant",
-        "constructor",
-        "constructs",
-        "copyright",
-        "default",
-        "deprecated",
-        "description",
-        "emits",
-        "enum",
-        "event",
-        "example",
-        "exports",
-        "extends",
-        "external",
-        "field",
-        "file",
-        "fileoverview",
-        "fires",
-        "function",
-        "generator",
-        "global",
-        "hideconstructor",
-        "host",
-        "ignore",
-        "implements",
-        "inheritdoc",
-        "inner",
-        "instance",
-        "interface",
-        "kind",
-        "lends",
-        "license",
-        "listens",
-        "member",
-        "memberof",
-        "method",
-        "mixes",
-        "module",
-        "name",
-        "namespace",
-        "override",
-        "package",
-        "param",
-        "private",
-        "property",
-        "protected",
-        "public",
-        "readonly",
-        "requires",
-        "returns",
-        "see",
-        "since",
-        "static",
-        "summary",
-        "template",
-        "this",
-        "throws",
-        "todo",
+        "abstract",        "access",          "alias",           "argument",        "async",           "augments",        "author",          "borrows",         "callback",        "class",
+        "classdesc",       "constant",        "constructor",     "constructs",      "copyright",       "default",         "deprecated",      "description",     "emits",           "enum",
+        "event",           "example",         "exports",         "extends",         "external",        "field",           "file",            "fileoverview",    "fires",           "function",
+        "generator",       "global",          "hideconstructor", "host",            "ignore",          "implements",      "inheritdoc",      "inner",           "instance",        "interface",
+        "kind",            "lends",           "license",         "listens",         "member",          "memberof",        "method",          "mixes",           "module",          "name",
+        "namespace",       "override",        "package",         "param",           "private",         "property",        "protected",       "public",          "readonly",        "requires",
+        "returns",         "see",             "since",           "static",          "summary",         "template",        "this",            "throws",          "todo",            "tutorial",
+        "type",            "typedef",         "var",             "variation",       "version",         "virtual",         "yields"
+    ];;
+    /**
+     * [&#64;use JSDoc](https://jsdoc.app/)
+     *
+     *   + entry count `4`
+     */
+    const inlinejsDocTagNames = [
+        "link",
+        "linkcode",  // synonyms of @link
+        "linkplain", // synonyms of @link
         "tutorial",
-        "type",
-        "typedef",
-        "var",
-        "variation",
-        "version",
-        "virtual",
-        "yields"
+        // "code"
     ];
+
     let jsDocTagNameCompletionEntries: CompletionEntry[];
     let jsDocTagCompletionEntries: CompletionEntry[];
+
+    let jsDocInlineTagNameCompletionEntries: CompletionEntry[];
+    let jsDocInlineTagCompletionEntries: CompletionEntry[];
 
     export function getJsDocCommentsFromDeclarations(declarations: readonly Declaration[]): SymbolDisplayPart[] {
         // Only collect doc comments from duplicate declarations once:
@@ -128,36 +75,36 @@ namespace ts.JsDoc {
 
     function getCommentText(tag: JSDocTag): string | undefined {
         const { comment } = tag;
+        const addComment = (s: Node | string) => {
+            const str = typeof s === "string"? s: s.getText();
+            return comment === undefined ? str : `${str} ${comment}`;
+        };
+
         switch (tag.kind) {
             case SyntaxKind.JSDocImplementsTag:
-                return withNode((tag as JSDocImplementsTag).class);
+                return addComment((tag as JSDocImplementsTag).class);
             case SyntaxKind.JSDocAugmentsTag:
-                return withNode((tag as JSDocAugmentsTag).class);
+                return addComment((tag as JSDocAugmentsTag).class);
             case SyntaxKind.JSDocTemplateTag:
-                return withList((tag as JSDocTemplateTag).typeParameters);
+                return addComment((tag as JSDocTemplateTag).typeParameters.map(x => x.getText()).join(", "));
             case SyntaxKind.JSDocTypeTag:
-                return withNode((tag as JSDocTypeTag).typeExpression);
+                return addComment((tag as JSDocTypeTag).typeExpression);
             case SyntaxKind.JSDocTypedefTag:
             case SyntaxKind.JSDocCallbackTag:
             case SyntaxKind.JSDocPropertyTag:
             case SyntaxKind.JSDocParameterTag:
                 const { name } = tag as JSDocTypedefTag | JSDocPropertyTag | JSDocParameterTag;
-                return name ? withNode(name) : comment;
+                return name ? addComment(name) : comment;
             default:
                 return comment;
         }
 
-        function withNode(node: Node) {
-            return addComment(node.getText());
-        }
-
-        function withList(list: NodeArray<Node>): string {
-            return addComment(list.map(x => x.getText()).join(", "));
-        }
-
-        function addComment(s: string) {
-            return comment === undefined ? s : `${s} ${comment}`;
-        }
+        // function withNode(node: Node) {
+        //     return addComment(node.getText());
+        // }
+        // function withList(list: NodeArray<Node>): string {
+        //     return addComment(list.map(x => x.getText()).join(", "));
+        // }
     }
 
     export function getJSDocTagNameCompletions(): CompletionEntry[] {
@@ -170,8 +117,16 @@ namespace ts.JsDoc {
             };
         }));
     }
-
-    export const getJSDocTagNameCompletionDetails = getJSDocTagCompletionDetails;
+    export function getJSDocInlineTagNameCompletions(): CompletionEntry[] {
+        return jsDocInlineTagNameCompletionEntries || (jsDocInlineTagNameCompletionEntries = map(inlinejsDocTagNames, tagName => {
+            return {
+                name: tagName,
+                kind: ScriptElementKind.keyword,
+                kindModifiers: "",
+                sortText: "0",
+            };
+        }));
+    }
 
     export function getJSDocTagCompletions(): CompletionEntry[] {
         return jsDocTagCompletionEntries || (jsDocTagCompletionEntries = map(jsDocTagNames, tagName => {
@@ -183,7 +138,22 @@ namespace ts.JsDoc {
             };
         }));
     }
+    export function getJSDocInlineTagCompletions(): CompletionEntry[] {
+        return jsDocInlineTagCompletionEntries || (jsDocInlineTagCompletionEntries = map(inlinejsDocTagNames, tagName => {
+            return {
+                name: `@${tagName}`,
+                kind: ScriptElementKind.keyword,
+                kindModifiers: "",
+                sortText: "0"
+            };
+        }));
+    }
 
+    /**
+     * share with jsdoc tag names
+     *
+     * @param name jsdoc tag name (with @
+     */
     export function getJSDocTagCompletionDetails(name: string): CompletionEntryDetails {
         return {
             name,
@@ -195,6 +165,7 @@ namespace ts.JsDoc {
             codeActions: undefined,
         };
     }
+    // export const getJSDocTagNameCompletionDetails = getJSDocTagCompletionDetails;
 
     export function getJSDocParameterNameCompletions(tag: JSDocParameterTag): CompletionEntry[] {
         if (!isIdentifier(tag.name)) {
@@ -278,8 +249,7 @@ namespace ts.JsDoc {
 
         if (!parameters || parameters.length === 0) {
             // if there are no parameters, just complete to a single line JSDoc comment
-            const singleLineResult = "/** */";
-            return { newText: singleLineResult, caretOffset: 3 };
+            return { newText: "/** */", caretOffset: 3 };
         }
 
         const indentationStr = getIndentationStringAtPosition(sourceFile, position);

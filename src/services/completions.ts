@@ -193,8 +193,15 @@ namespace ts.Completions {
             case CompletionDataKind.JsDocTag:
                 // If the current position is a jsDoc tag, only tags should be provided for completion
                 return jsdocCompletionInfo(JsDoc.getJSDocTagCompletions());
+
+            case CompletionDataKind.InlineJsDocTagName:
+                return jsdocCompletionInfo(JsDoc.getJSDocInlineTagNameCompletions());
+            case CompletionDataKind.InlineJsDocTag:
+                return jsdocCompletionInfo(JsDoc.getJSDocInlineTagCompletions());
+
             case CompletionDataKind.JsDocParameterName:
                 return jsdocCompletionInfo(JsDoc.getJSDocParameterNameCompletions(completionData.tag));
+
             default:
                 return Debug.assertNever(completionData);
         }
@@ -644,9 +651,11 @@ namespace ts.Completions {
                 const { request } = symbolCompletion;
                 switch (request.kind) {
                     case CompletionDataKind.JsDocTagName:
-                        return JsDoc.getJSDocTagNameCompletionDetails(name);
                     case CompletionDataKind.JsDocTag:
+                    case CompletionDataKind.InlineJsDocTagName:
+                    case CompletionDataKind.InlineJsDocTag:
                         return JsDoc.getJSDocTagCompletionDetails(name);
+
                     case CompletionDataKind.JsDocParameterName:
                         return JsDoc.getJSDocParameterNameCompletionDetails(name);
                     default:
@@ -736,7 +745,14 @@ namespace ts.Completions {
         return completion.type === "symbol" ? completion.symbol : undefined;
     }
 
-    const enum CompletionDataKind { Data, JsDocTagName, JsDocTag, JsDocParameterName }
+    const enum CompletionDataKind {
+        Data,
+        JsDocTagName,
+        JsDocTag,
+        InlineJsDocTagName,
+        InlineJsDocTag,
+        JsDocParameterName
+    }
     /** true: after the `=` sign but no identifier has been typed yet. Else is the Identifier after the initializer. */
     type IsJsxInitializer = boolean | Identifier;
     interface CompletionData {
@@ -760,7 +776,11 @@ namespace ts.Completions {
         /** In JSX tag name and attribute names, identifiers like "my-tag" or "aria-name" is valid identifier. */
         readonly isJsxIdentifierExpected: boolean;
     }
-    type Request = { readonly kind: CompletionDataKind.JsDocTagName | CompletionDataKind.JsDocTag } | { readonly kind: CompletionDataKind.JsDocParameterName, tag: JSDocParameterTag };
+    type Request = {
+        readonly kind: CompletionDataKind.JsDocTagName | CompletionDataKind.JsDocTag | CompletionDataKind.InlineJsDocTagName | CompletionDataKind.InlineJsDocTag
+    } | {
+        readonly kind: CompletionDataKind.JsDocParameterName, tag: JSDocParameterTag
+    };
 
     export const enum CompletionKind {
         ObjectPropertyDeclaration,
@@ -876,44 +896,45 @@ namespace ts.Completions {
                 }
                 else {
                     const lineStart = getLineStartPositionForPosition(position, sourceFile);
-                    // if (
-                    //     // by "/[^/\s\*]/", it becomes an correct regex (But that doesn't work as expected
-                    //     !/[^/\s\*]/.test(sourceFile.text.substring(lineStart, position))
-                    // ) {
-                    //     return { kind: CompletionDataKind.JsDocTag };
-                    // }
-                    if (!(sourceFile.text.substring(lineStart, position).match(/[^\*|\s|(/\*\*)]/))) {
+                    if (
+                        // by "/[^/\s\*]/", it becomes an correct regex (But that doesn't work as expected
+                        !/[^/\s\*]/.test(sourceFile.text.substring(lineStart, position))
+                    ) {
                         return { kind: CompletionDataKind.JsDocTag };
                     }
+                    // if (!(sourceFile.text.substring(lineStart, position).match(/[^\*|\s|(/\*\*)]/))) {
+                    //     return { kind: CompletionDataKind.JsDocTag };
+                    // }
                 }
                 /*/
                 const lineStart = getLineStartPositionForPosition(position, sourceFile);
                 const jsdocFragment = sourceFile.text.substring(lineStart, position);
-                const match =
-                    // Support for inline jsdoc tag (for @link etc)
-                    /^(?!.*@\w+).+?\{\s*(@)?$/.exec(jsdocFragment) ||
-                    // or jsdoc tag will be listed if there is more than one whitespace after "*"
-                    /^(?:\s*\/\*\*|[*\s]+(?=\s))?\s+(@)?$/.exec(jsdocFragment);
+                // const match =
+                //     // Support for inline jsdoc tag (for @link etc)
+                //     /^(?!.*@\w+).+?\{\s*(@)?$/.exec(jsdocFragment) ||
+                //     // or jsdoc tag will be listed if there is more than one whitespace after "*"
+                //     /^(?:\s*\/\*\*|[*\s]+(?=\s))?\s+(@)?$/.exec(jsdocFragment);
 
-                if (match) {
-                    return {
-                        // The current position is next to the '@' sign, when no tag name being provided yet.
-                        // Provide a full list of tag names
-                        kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
-                    };
-                }
-                // let match = /^(?!.*@\w+).+?\{\s*(@)?$/.exec(jsdocFragment);
                 // if (match) {
                 //     return {
-                //         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
-                //     };
-                // }
-                // match = /^(?:\s*\/\*\*|[*\s]+(?=\s))?\s+(@)?$/.exec(jsdocFragment);
-                // if (match) {
-                //     return {
+                //         // The current position is next to the '@' sign, when no tag name being provided yet.
+                //         // Provide a full list of tag names
                 //         kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
                 //     };
                 // }
+
+                let match = /^(?!.*@\w+).+?\{\s*(@)?$/.exec(jsdocFragment);
+                if (match) {
+                    return {
+                        kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
+                    };
+                }
+                match = /^(?:\s*\/\*\*|[*\s]+(?=\s))?\s+(@)?$/.exec(jsdocFragment);
+                if (match) {
+                    return {
+                        kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
+                    };
+                }
                 //*/
             }
 
