@@ -152,12 +152,15 @@ test.markerNames().forEach(marker => {
             case 10: case 11:
             // also, if there is more than one whitespace at the beginning of the line.
             case 20: case 21: case 22:
+                completionOpt = { marker, includes: [
+                    "@abstract", "@access",
+                ]};
+                break;
 
             // also, can support the inline jsdoc tags
             case 70:
                 completionOpt = { marker, includes: [
-                    "@abstract", "@access",
-                    // "@link"
+                    "@link", "@tutorial",
                 ]};
                 break;
 
@@ -169,13 +172,19 @@ test.markerNames().forEach(marker => {
             //  this behavior does not by getCompletionData.insideComment.hasDocComment clause
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             case 40: case 41: case 42:
+                completionOpt = {
+                    marker,
+                    triggerCharacter: "@",
+                    includes: ["abstract", "access"]
+                };
+                break;
 
             // also, can support the inline jsdoc tags
             case 71:
                 completionOpt = {
                     marker,
                     triggerCharacter: "@",
-                    includes: ["abstract", "access"]
+                    includes: ["link", "tutorial"]
                 };
                 break;
 
