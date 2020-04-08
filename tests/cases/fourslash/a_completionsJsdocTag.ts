@@ -165,7 +165,7 @@ test.markerNames().forEach(marker => {
                 break;
 
             // 3x - jsdoc tag names will be listed
-            case 30: case 31: case 32: case 33: case 34: case 35:
+            case 30: case 31: case 32: case 33: case 34: case 35: case 36:
 
             // 4x - jsdoc tag name completions should not occur
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,7 +175,7 @@ test.markerNames().forEach(marker => {
                 completionOpt = {
                     marker,
                     triggerCharacter: "@",
-                    includes: ["abstract", "access"]
+                    includes: ["package", "param"]
                 };
                 break;
 
