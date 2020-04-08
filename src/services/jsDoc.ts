@@ -7,18 +7,20 @@ namespace ts.JsDoc {
         "generator",       "global",          "hideconstructor", "host",            "ignore",          "implements",      "inheritdoc",      "inner",           "instance",        "interface",
         "kind",            "lends",           "license",         "listens",         "member",          "memberof",        "method",          "mixes",           "module",          "name",
         "namespace",       "override",        "package",         "param",           "private",         "property",        "protected",       "public",          "readonly",        "requires",
-        "returns",         "see",             "since",           "static",          "summary",         "template",        "this",            "throws",          "todo",            "tutorial",
-        "type",            "typedef",         "var",             "variation",       "version",         "virtual",         "yields"
-    ];;
+        "returns",         "see",             "since",           "static",          "summary",         "template",        "this",            "throws",          "todo",            "type",
+        "typedef",         "var",             "variation",       "version",         "virtual",         "yields"
+    ];
     /**
      * [&#64;use JSDoc](https://jsdoc.app/)
      *
-     *   + entry count `4`
+     *   + 4 entries
      */
     const inlinejsDocTagNames = [
-        "link",
-        "linkcode",  // synonyms of @link
-        "linkplain", // synonyms of @link
+        // "link",
+        // "linkcode",  // synonyms of @link
+        // "linkplain", // synonyms of @link
+        // <primary>:<synonym>,<synonym>,...
+        "link:linkcode,linkplain",
         "tutorial",
         // "code"
     ];
@@ -107,45 +109,45 @@ namespace ts.JsDoc {
         // }
     }
 
+    /**
+     * jsDoc(T)ag(C)ompletion(E)ntry(E)mitter
+     *
+     * @param name jsdoc tag name
+     */
+    const jsDocTCEE = (name: string) => ({ name, kind: ScriptElementKind.keyword, kindModifiers: "", sortText: "0" });
+    /**
+     * jsDoc(T)ag(N)ame(C)ompletion(E)ntry(E)mitter
+     *
+     * @param name jsdoc tag name
+     */
+    const jsDocTNCEE = (name: string) => jsDocTCEE("@" + name);
+
     export function getJSDocTagNameCompletions(): CompletionEntry[] {
-        return jsDocTagNameCompletionEntries || (jsDocTagNameCompletionEntries = map(jsDocTagNames, tagName => {
-            return {
-                name: tagName,
-                kind: ScriptElementKind.keyword,
-                kindModifiers: "",
-                sortText: "0",
-            };
-        }));
+        return jsDocTagNameCompletionEntries || (jsDocTagNameCompletionEntries = map(jsDocTagNames, jsDocTCEE));
     }
     export function getJSDocInlineTagNameCompletions(): CompletionEntry[] {
-        return jsDocInlineTagNameCompletionEntries || (jsDocInlineTagNameCompletionEntries = map(inlinejsDocTagNames, tagName => {
-            return {
-                name: tagName,
-                kind: ScriptElementKind.keyword,
-                kindModifiers: "",
-                sortText: "0",
-            };
-        }));
+        if (jsDocInlineTagNameCompletionEntries) return jsDocInlineTagNameCompletionEntries;
+
+        const tmp: CompletionEntry[] = [];
+        forEach(inlinejsDocTagNames, name => {
+            if (name.indexOf(":") > 0) {
+                // "link:linkcode,linkplain" -> ["link", "linkcode,linkplain"]
+                const list = name.split(":");
+                tmp.push(jsDocTCEE(list[0]), ...map(list[1].split(","), jsDocTCEE));
+            }
+            else {
+                tmp.push(jsDocTCEE(name));
+            }
+        });
+        return jsDocInlineTagNameCompletionEntries = tmp;
     }
 
     export function getJSDocTagCompletions(): CompletionEntry[] {
-        return jsDocTagCompletionEntries || (jsDocTagCompletionEntries = map(jsDocTagNames, tagName => {
-            return {
-                name: `@${tagName}`,
-                kind: ScriptElementKind.keyword,
-                kindModifiers: "",
-                sortText: "0"
-            };
-        }));
+        return jsDocTagCompletionEntries || (jsDocTagCompletionEntries = map(jsDocTagNames, jsDocTNCEE));
     }
     export function getJSDocInlineTagCompletions(): CompletionEntry[] {
-        return jsDocInlineTagCompletionEntries || (jsDocInlineTagCompletionEntries = map(inlinejsDocTagNames, tagName => {
-            return {
-                name: `@${tagName}`,
-                kind: ScriptElementKind.keyword,
-                kindModifiers: "",
-                sortText: "0"
-            };
+        return jsDocInlineTagCompletionEntries || (jsDocInlineTagCompletionEntries = map(getJSDocInlineTagNameCompletions(), e => {
+            return jsDocTNCEE(e.name);
         }));
     }
 
