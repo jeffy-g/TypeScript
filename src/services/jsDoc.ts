@@ -16,11 +16,9 @@ namespace ts.JsDoc {
      *   + 4 entries
      */
     const inlinejsDocTagNames = [
-        // "link",
-        // "linkcode",  // synonyms of @link
-        // "linkplain", // synonyms of @link
-        // <primary>:<synonym>,<synonym>,...
-        "link:linkcode,linkplain",
+        "link",
+        "linkcode",  // synonyms of @link
+        "linkplain", // synonyms of @link
         "tutorial",
         // "code"
     ];
@@ -78,8 +76,8 @@ namespace ts.JsDoc {
     function getCommentText(tag: JSDocTag): string | undefined {
         const { comment } = tag;
         const addComment = (s: Node | string) => {
-            const str = typeof s === "string"? s: s.getText();
-            return comment === undefined ? str : `${str} ${comment}`;
+            const text = typeof s === "string"? s: s.getText();
+            return comment === undefined ? text : `${text} ${comment}`;
         };
 
         switch (tag.kind) {
@@ -114,7 +112,7 @@ namespace ts.JsDoc {
      *
      * @param name jsdoc tag name
      */
-    const jsDocTCEE = (name: string) => ({ name, kind: ScriptElementKind.keyword, kindModifiers: "", sortText: "0" });
+    const jsDocTCEE = (name: string) => ({ name, kind: ScriptElementKind.keyword, kindModifiers: "", sortText: "0" }) as CompletionEntry;
     /**
      * jsDoc(T)ag(N)ame(C)ompletion(E)ntry(E)mitter
      *
@@ -125,45 +123,50 @@ namespace ts.JsDoc {
     export function getJSDocTagNameCompletions(): CompletionEntry[] {
         return jsDocTagNameCompletionEntries || (jsDocTagNameCompletionEntries = map(jsDocTagNames, jsDocTCEE));
     }
-    export function getJSDocInlineTagNameCompletions(): CompletionEntry[] {
-        if (jsDocInlineTagNameCompletionEntries) return jsDocInlineTagNameCompletionEntries;
-
-        const tmp: CompletionEntry[] = [];
-        forEach(inlinejsDocTagNames, name => {
-            if (name.indexOf(":") > 0) {
-                // "link:linkcode,linkplain" -> ["link", "linkcode,linkplain"]
-                const list = name.split(":");
-                tmp.push(jsDocTCEE(list[0]), ...map(list[1].split(","), jsDocTCEE));
-            }
-            else {
-                tmp.push(jsDocTCEE(name));
-            }
-        });
-        return jsDocInlineTagNameCompletionEntries = tmp;
+    export function getInlineJSDocTagNameCompletions(): CompletionEntry[] {
+        return jsDocInlineTagNameCompletionEntries || (jsDocInlineTagNameCompletionEntries = map(inlinejsDocTagNames, jsDocTCEE));
     }
 
     export function getJSDocTagCompletions(): CompletionEntry[] {
-        return jsDocTagCompletionEntries || (jsDocTagCompletionEntries = map(jsDocTagNames, jsDocTNCEE));
+        return jsDocTagCompletionEntries || (jsDocTagCompletionEntries = map(getJSDocTagNameCompletions(), e => {
+            return jsDocTNCEE(e.name);
+        }));
     }
-    export function getJSDocInlineTagCompletions(): CompletionEntry[] {
-        return jsDocInlineTagCompletionEntries || (jsDocInlineTagCompletionEntries = map(getJSDocInlineTagNameCompletions(), e => {
+    export function getInlineJSDocTagCompletions(): CompletionEntry[] {
+        return jsDocInlineTagCompletionEntries || (jsDocInlineTagCompletionEntries = map(getInlineJSDocTagNameCompletions(), e => {
             return jsDocTNCEE(e.name);
         }));
     }
 
     /**
      * share with jsdoc tag names
-     *
+     * 
      * @param name jsdoc tag name (with @
      */
     export function getJSDocTagCompletionDetails(name: string): CompletionEntryDetails {
+        const finder = (e => e.name === name) as (e: CompletionEntry) => boolean;
+        const entry = find(getJSDocTagCompletions(), finder) || find(getInlineJSDocTagCompletions(), finder);
+        let infos: JSDocTagInfo[];
+        let documentation: SymbolDisplayPart[];
+        if (entry) {
+            const text = entry.name.substring(1);
+            infos = [{
+                name: text, text
+            }];
+            documentation = [{
+                text: `see - https://jsdoc.app/tags-${text}.html`,
+                kind: "keyword"
+            }];
+        }
         return {
             name,
             kind: ScriptElementKind.unknown, // TODO: should have its own kind?
             kindModifiers: "",
             displayParts: [textPart(name)],
-            documentation: emptyArray,
-            tags: undefined,
+            // @ts-ignore 
+            documentation: documentation || undefined,
+            // @ts-ignore 
+            tags: infos || undefined,
             codeActions: undefined,
         };
     }
