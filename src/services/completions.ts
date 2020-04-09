@@ -929,7 +929,7 @@ namespace ts.Completions {
                         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
                     };
                 }
-                match = /^(?:\s*\/\*\*|[*\s]+(?=\s))?\s+(@)?$/.exec(jsdocFragment);
+                match = /^(?:\s*\/\*\*|[*\s]+)?\s+(@)?$/.exec(jsdocFragment);
                 if (match) {
                     return {
                         kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
