@@ -37,6 +37,7 @@ namespace ts.JsDoc {
         "example",
         "exports",
         "external:host",
+        "field",                      // **not listed at https://jsdoc.app/
         "file:fileoverview,overview",
         "fires:emits",
         "function:func,method",
@@ -74,6 +75,7 @@ namespace ts.JsDoc {
         "since",
         "static",
         "summary",
+        "template",                   // **not listed at https://jsdoc.app/
         "this",
         "throws:exception",
         "todo",
