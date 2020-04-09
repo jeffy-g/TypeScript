@@ -236,8 +236,10 @@ namespace ts.JsDoc {
         let infos: TBD<JSDocTagInfo[]>;
         let documentation: TBD<SymbolDisplayPart[]>;
 
+        // TODO: "tutorial" does contains at both block and inline
         const entry = find(getJSDocTagCompletions(), finder) || find(getInlineJSDocTagCompletions(), finder);
-        const kind = entry && entry.kind || ScriptElementKind.unknown;
+        const kind  = entry && entry.kind || ScriptElementKind.unknown;
+
         if (entry) {
             let synonyms: TBD<string[]>;
             const tagName = entry.name.substring(1);
@@ -258,6 +260,7 @@ namespace ts.JsDoc {
                 // https://jsdoc.app/tags-tutorial.html
                 // https://jsdoc.app/tags-inline-link.html
                 //                        ^^^^^^^
+                // TODO: more smarty code
                 text: `${synonyms? `synonyms: ${synonyms.map(s => "@" + s).join(", ")}\n\n`: ""}see - https://jsdoc.app/tags-${suffix}${tagName}.html`,
                 kind: "keyword"
             }];
