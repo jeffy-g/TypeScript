@@ -195,9 +195,9 @@ namespace ts.Completions {
                 return jsdocCompletionInfo(JsDoc.getJSDocTagCompletions());
 
             case CompletionDataKind.InlineJsDocTagName:
-                return jsdocCompletionInfo(JsDoc.getJSDocInlineTagNameCompletions());
+                return jsdocCompletionInfo(JsDoc.getInlineJSDocTagNameCompletions());
             case CompletionDataKind.InlineJsDocTag:
-                return jsdocCompletionInfo(JsDoc.getJSDocInlineTagCompletions());
+                return jsdocCompletionInfo(JsDoc.getInlineJSDocTagCompletions());
 
             case CompletionDataKind.JsDocParameterName:
                 return jsdocCompletionInfo(JsDoc.getJSDocParameterNameCompletions(completionData.tag));
