@@ -923,7 +923,7 @@ namespace ts.Completions {
                 //     };
                 // }
 
-                let match = /^(?!.*@\w+).+?\{\s*(@)?$/.exec(jsdocFragment);
+                let match = /^(?!.*@\w+).+\{\s*(@)?$/.exec(jsdocFragment);
                 if (match) {
                     return {
                         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag

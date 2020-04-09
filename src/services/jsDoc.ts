@@ -1,26 +1,97 @@
 /* @internal */
 namespace ts.JsDoc {
+
+    /**
+     * To Be Done
+     */
+    type TBD<T> = T | undefined;
+
+    /**
+     * [&#64;use JSDoc](https://jsdoc.app/)
+     *
+     * jsdoc tag names with synonyms {@linkplain https://jsdoc.app/ &#64;use JSDoc}
+     *
+     *   + 67 entries
+     *
+     *   + format: <primary>:<synonym>,<synonym>,...
+     */
     const jsDocTagNames = [
-        "abstract",        "access",          "alias",           "argument",        "async",           "augments",        "author",          "borrows",         "callback",        "class",
-        "classdesc",       "constant",        "constructor",     "constructs",      "copyright",       "default",         "deprecated",      "description",     "emits",           "enum",
-        "event",           "example",         "exports",         "extends",         "external",        "field",           "file",            "fileoverview",    "fires",           "function",
-        "generator",       "global",          "hideconstructor", "host",            "ignore",          "implements",      "inheritdoc",      "inner",           "instance",        "interface",
-        "kind",            "lends",           "license",         "listens",         "member",          "memberof",        "method",          "mixes",           "module",          "name",
-        "namespace",       "override",        "package",         "param",           "private",         "property",        "protected",       "public",          "readonly",        "requires",
-        "returns",         "see",             "since",           "static",          "summary",         "template",        "this",            "throws",          "todo",            "type",
-        "typedef",         "var",             "variation",       "version",         "virtual",         "yields"
+        "abstract:virtual",
+        "access",
+        "alias",
+        "async",
+        "augments:extends",
+        "author",
+        "borrows",
+        "callback",
+        "class:constructor",
+        "classdesc",
+        "constant:const",
+        "constructs",
+        "copyright",
+        "default:defaultvalue",
+        "deprecated",
+        "description:desc",
+        "enum",
+        "event",
+        "example",
+        "exports",
+        "external:host",
+        "file:fileoverview,overview",
+        "fires:emits",
+        "function:func,method",
+        "generator",
+        "global",
+        "hideconstructor",
+        "ignore",
+        "implements",
+        "inheritdoc",
+        "inner",
+        "instance",
+        "interface",
+        "kind",
+        "lends",
+        "license",
+        "listens",
+        "member:var",
+        "memberof",
+        "mixes",
+        "mixin",
+        "module",
+        "name",
+        "namespace",
+        "override",
+        "package",
+        "param:arg,argument",
+        "private",
+        "property:prop",
+        "protected",
+        "public",
+        "readonly",
+        "requires",
+        "returns:return",
+        "see",
+        "since",
+        "static",
+        "summary",
+        "this",
+        "throws:exception",
+        "todo",
+        "tutorial",
+        "type",
+        "typedef",
+        "variation",
+        "version",
+        "yields:yield"
     ];
     /**
      * [&#64;use JSDoc](https://jsdoc.app/)
      *
-     *   + 4 entries
+     *   + 2 entries
      */
     const inlinejsDocTagNames = [
-        "link",
-        "linkcode",  // synonyms of @link
-        "linkplain", // synonyms of @link
+        "link:linkcode,linkplain",
         "tutorial",
-        // "code"
     ];
 
     let jsDocTagNameCompletionEntries: CompletionEntry[];
@@ -73,7 +144,7 @@ namespace ts.JsDoc {
         return tags;
     }
 
-    function getCommentText(tag: JSDocTag): string | undefined {
+    function getCommentText(tag: JSDocTag): TBD<string> {
         const { comment } = tag;
         const addComment = (s: Node | string) => {
             const text = typeof s === "string"? s: s.getText();
@@ -98,7 +169,6 @@ namespace ts.JsDoc {
             default:
                 return comment;
         }
-
         // function withNode(node: Node) {
         //     return addComment(node.getText());
         // }
@@ -108,64 +178,87 @@ namespace ts.JsDoc {
     }
 
     /**
-     * jsDoc(T)ag(C)ompletion(E)ntry(E)mitter
+     * jsDocTag Completion Entry Emitter
      *
      * @param name jsdoc tag name
      */
-    const jsDocTCEE = (name: string) => ({ name, kind: ScriptElementKind.keyword, kindModifiers: "", sortText: "0" }) as CompletionEntry;
+    const emitJSDocTagCompletionEntry = (name: string) => ({ name, kind: ScriptElementKind.keyword, kindModifiers: "", sortText: "0" }) as CompletionEntry;
     /**
-     * jsDoc(T)ag(N)ame(C)ompletion(E)ntry(E)mitter
+     * jsDocTag Name Completion Entry Emitter
      *
      * @param name jsdoc tag name
      */
-    const jsDocTNCEE = (name: string) => jsDocTCEE("@" + name);
+    const emitJSDocTagNameCompletionEntry = (name: string) => emitJSDocTagCompletionEntry("@" + name);
+    // helper
+    const parseJSDocTagNamesForCompletionEntry = (names: string[]) => {
+        const entries: CompletionEntry[] = [];
+        for (let i = 0, end = names.length; i < end;) {
+            let name = names[i];
+            if (name.indexOf(":") > 0) {
+                // "link:linkcode,linkplain" -> ["link", "linkcode,linkplain"]
+                name = name.split(":")[0];
+            }
+            entries[i++] = emitJSDocTagCompletionEntry(name);
+        }
+        return entries;
+    };
 
     export function getJSDocTagNameCompletions(): CompletionEntry[] {
-        return jsDocTagNameCompletionEntries || (jsDocTagNameCompletionEntries = map(jsDocTagNames, jsDocTCEE));
+        if (jsDocTagNameCompletionEntries) return jsDocTagNameCompletionEntries;
+        return jsDocTagNameCompletionEntries = parseJSDocTagNamesForCompletionEntry(jsDocTagNames);
     }
     export function getInlineJSDocTagNameCompletions(): CompletionEntry[] {
-        return jsDocInlineTagNameCompletionEntries || (jsDocInlineTagNameCompletionEntries = map(inlinejsDocTagNames, jsDocTCEE));
+        if (jsDocInlineTagNameCompletionEntries) return jsDocInlineTagNameCompletionEntries;
+        return jsDocInlineTagNameCompletionEntries = parseJSDocTagNamesForCompletionEntry(inlinejsDocTagNames);
     }
 
     export function getJSDocTagCompletions(): CompletionEntry[] {
         return jsDocTagCompletionEntries || (jsDocTagCompletionEntries = map(getJSDocTagNameCompletions(), e => {
-            return jsDocTNCEE(e.name);
+            return emitJSDocTagNameCompletionEntry(e.name);
         }));
     }
     export function getInlineJSDocTagCompletions(): CompletionEntry[] {
         return jsDocInlineTagCompletionEntries || (jsDocInlineTagCompletionEntries = map(getInlineJSDocTagNameCompletions(), e => {
-            return jsDocTNCEE(e.name);
+            return emitJSDocTagNameCompletionEntry(e.name);
         }));
     }
 
     /**
      * share with jsdoc tag names
-     * 
+     *
      * @param name jsdoc tag name (with @
      */
     export function getJSDocTagCompletionDetails(name: string): CompletionEntryDetails {
+
         const finder = (e => e.name === name) as (e: CompletionEntry) => boolean;
+        let infos: TBD<JSDocTagInfo[]>;
+        let documentation: TBD<SymbolDisplayPart[]>;
+
         const entry = find(getJSDocTagCompletions(), finder) || find(getInlineJSDocTagCompletions(), finder);
-        let infos: JSDocTagInfo[];
-        let documentation: SymbolDisplayPart[];
         if (entry) {
-            const text = entry.name.substring(1);
+            let synonyms: TBD<string[]>;
+            const tagName = entry.name.substring(1);
+            const finder2 = (name: string) => name.indexOf(tagName) === 0;
+            const data = find(jsDocTagNames, finder2) || find(inlinejsDocTagNames, finder2);
+            if (data && data.indexOf(":") > 0) {
+                synonyms = data.split(":")[1].split(",");
+            }
             infos = [{
-                name: text, text
+                name: tagName, text: tagName
             }];
             documentation = [{
-                text: `see - https://jsdoc.app/tags-${text}.html`,
+                // DEVNOTE: details seems to be parsed as markdown
+                text: `${synonyms? `synonyms: ${synonyms.map(s => "@" + s).join(", ")}\n\n`: ""}see - https://jsdoc.app/tags-${tagName}.html`,
                 kind: "keyword"
             }];
         }
+
         return {
             name,
             kind: ScriptElementKind.unknown, // TODO: should have its own kind?
             kindModifiers: "",
             displayParts: [textPart(name)],
-            // @ts-ignore 
             documentation: documentation || undefined,
-            // @ts-ignore 
             tags: infos || undefined,
             codeActions: undefined,
         };
