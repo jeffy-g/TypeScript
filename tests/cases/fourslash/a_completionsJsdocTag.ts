@@ -94,7 +94,7 @@
 //// */
 ////
 
-verify.completions({ marker: "", includes: { name: "@property", text: "@property", kind: "keyword" } });
+verify.completions({ marker: "", includes: { name: "@property"/* , text: "@property" */, kind: "keyword" } });
 
 
 //
