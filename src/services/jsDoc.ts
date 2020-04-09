@@ -237,6 +237,7 @@ namespace ts.JsDoc {
         let documentation: TBD<SymbolDisplayPart[]>;
 
         const entry = find(getJSDocTagCompletions(), finder) || find(getInlineJSDocTagCompletions(), finder);
+        const kind = entry && entry.kind || ScriptElementKind.unknown;
         if (entry) {
             let synonyms: TBD<string[]>;
             const tagName = entry.name.substring(1);
@@ -245,11 +246,11 @@ namespace ts.JsDoc {
             if (data && data.indexOf(":") > 0) {
                 synonyms = data.split(":")[1].split(",");
             }
-            const suffix = entry.kind === ScriptElementKind.jsDocTag? "": "inline-";
+            const suffix = kind === ScriptElementKind.jsDocTag? "": "inline-";
             infos = [{
                 name: tagName,
                 // TODO: Quote a short description from https://jsdoc.app/
-                text: tagName
+                text: kind
             }];
             documentation = [{
                 // DEVNOTE: details seems to be parsed as markdown
@@ -264,7 +265,7 @@ namespace ts.JsDoc {
 
         return {
             name,
-            kind: ScriptElementKind.unknown, // TODO: should have its own kind?
+            kind, // TODO: should have its own kind?
             kindModifiers: "",
             displayParts: [textPart(name)],
             documentation: documentation || undefined,
