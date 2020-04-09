@@ -180,19 +180,19 @@ namespace ts.JsDoc {
     }
 
     /**
+     * Completion Entry Emitter
+     *
+     * @param name jsdoc tag (name)
+     */
+    const emitCompletionEntry = (name: string, kind = ScriptElementKind.jsDocTag) => ({ name, kind, kindModifiers: "", sortText: "0" }) as CompletionEntry;
+    /**
      * jsDocTag Completion Entry Emitter
      *
      * @param name jsdoc tag name
      */
-    const emitJSDocTagCompletionEntry = (name: string) => ({ name, kind: ScriptElementKind.keyword, kindModifiers: "", sortText: "0" }) as CompletionEntry;
-    /**
-     * jsDocTag Name Completion Entry Emitter
-     *
-     * @param name jsdoc tag name
-     */
-    const emitJSDocTagNameCompletionEntry = (name: string) => emitJSDocTagCompletionEntry("@" + name);
+    const emitTagCompletionEntry = (name: string, kind = ScriptElementKind.jsDocTag) => emitCompletionEntry("@" + name, kind);
     // helper
-    const parseJSDocTagNamesForCompletionEntry = (names: string[]) => {
+    const parseJSDocTagNamesForCompletionEntry = (names: string[], kind = ScriptElementKind.jsDocTag) => {
         const entries: CompletionEntry[] = [];
         for (let i = 0, end = names.length; i < end;) {
             let name = names[i];
@@ -200,7 +200,7 @@ namespace ts.JsDoc {
                 // "link:linkcode,linkplain" -> ["link", "linkcode,linkplain"]
                 name = name.split(":")[0];
             }
-            entries[i++] = emitJSDocTagCompletionEntry(name);
+            entries[i++] = emitCompletionEntry(name, kind);
         }
         return entries;
     };
@@ -211,17 +211,17 @@ namespace ts.JsDoc {
     }
     export function getInlineJSDocTagNameCompletions(): CompletionEntry[] {
         if (jsDocInlineTagNameCompletionEntries) return jsDocInlineTagNameCompletionEntries;
-        return jsDocInlineTagNameCompletionEntries = parseJSDocTagNamesForCompletionEntry(inlinejsDocTagNames);
+        return jsDocInlineTagNameCompletionEntries = parseJSDocTagNamesForCompletionEntry(inlinejsDocTagNames, ScriptElementKind.inlineJsDocTag);
     }
 
     export function getJSDocTagCompletions(): CompletionEntry[] {
         return jsDocTagCompletionEntries || (jsDocTagCompletionEntries = map(getJSDocTagNameCompletions(), e => {
-            return emitJSDocTagNameCompletionEntry(e.name);
+            return emitTagCompletionEntry(e.name);
         }));
     }
     export function getInlineJSDocTagCompletions(): CompletionEntry[] {
         return jsDocInlineTagCompletionEntries || (jsDocInlineTagCompletionEntries = map(getInlineJSDocTagNameCompletions(), e => {
-            return emitJSDocTagNameCompletionEntry(e.name);
+            return emitTagCompletionEntry(e.name, ScriptElementKind.inlineJsDocTag);
         }));
     }
 
@@ -245,12 +245,19 @@ namespace ts.JsDoc {
             if (data && data.indexOf(":") > 0) {
                 synonyms = data.split(":")[1].split(",");
             }
+            const suffix = entry.kind === ScriptElementKind.jsDocTag? "": "inline-";
             infos = [{
-                name: tagName, text: tagName
+                name: tagName,
+                // TODO: Quote a short description from https://jsdoc.app/
+                text: tagName
             }];
             documentation = [{
                 // DEVNOTE: details seems to be parsed as markdown
-                text: `${synonyms? `synonyms: ${synonyms.map(s => "@" + s).join(", ")}\n\n`: ""}see - https://jsdoc.app/tags-${tagName}.html`,
+                // TODO: link url is different for block type and inline type
+                // https://jsdoc.app/tags-tutorial.html
+                // https://jsdoc.app/tags-inline-link.html
+                //                        ^^^^^^^
+                text: `${synonyms? `synonyms: ${synonyms.map(s => "@" + s).join(", ")}\n\n`: ""}see - https://jsdoc.app/tags-${suffix}${tagName}.html`,
                 kind: "keyword"
             }];
         }
