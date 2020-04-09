@@ -261,7 +261,9 @@ namespace ts.JsDoc {
                 // https://jsdoc.app/tags-inline-link.html
                 //                        ^^^^^^^
                 // TODO: more smarty code
-                text: `${synonyms? `synonyms: ${synonyms.map(s => "@" + s).join(", ")}\n\n`: ""}see - https://jsdoc.app/tags-${suffix}${tagName}.html`,
+                text: `${synonyms? `synonyms: ${
+                    synonyms.map(s => "@" + s).join(", ")}\n\n`: ""
+                }More details - [@use JSDoc](https://jsdoc.app/tags-${suffix}${tagName}.html)`,
                 kind: "keyword"
             }];
         }
