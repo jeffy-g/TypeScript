@@ -896,15 +896,15 @@ namespace ts.Completions {
                 }
                 else {
                     const lineStart = getLineStartPositionForPosition(position, sourceFile);
-                    if (
-                        // by "/[^/\s\*]/", it becomes an correct regex (But that doesn't work as expected
-                        !/[^/\s\*]/.test(sourceFile.text.substring(lineStart, position))
-                    ) {
-                        return { kind: CompletionDataKind.JsDocTag };
-                    }
-                    // if (!(sourceFile.text.substring(lineStart, position).match(/[^\*|\s|(/\*\*)]/))) {
+                    // if (
+                    //     // by "/[^/\s\*]/", it becomes an correct regex (But that doesn't work as expected
+                    //     !/[^/\s\*]/.test(sourceFile.text.substring(lineStart, position))
+                    // ) {
                     //     return { kind: CompletionDataKind.JsDocTag };
                     // }
+                    if (!(sourceFile.text.substring(lineStart, position).match(/[^\*|\s|(/\*\*)]/))) {
+                        return { kind: CompletionDataKind.JsDocTag };
+                    }
                 }
                 /*/
                 const lineStart = getLineStartPositionForPosition(position, sourceFile);
@@ -923,14 +923,18 @@ namespace ts.Completions {
                 //     };
                 // }
 
+                // e.g - [link to{}]
+                // inline jsdoc tag の場合検証が複雑になるので、line に @w+ が含まれない場合は、
+                // ほぼ無条件で inline jsdoc tag の completion を可能とする
                 let match = /^(?!.*@\w+).+\{\s*(@)?$/.exec(jsdocFragment);
                 if (match) {
                     return {
                         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
                     };
                 }
-                match = /^(?:\s*\/\*\*|[*\s]+)?\s+(@)?$/.exec(jsdocFragment);
-                if (match) {
+                const reJSDocFragment = /^(?:\s*\/\*\*\s+|\s+\*?\s+)(@(?:\w+)?)?/g;
+                match = reJSDocFragment.exec(jsdocFragment);
+                if (match && reJSDocFragment.lastIndex === jsdocFragment.length) {
                     return {
                         kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
                     };
@@ -943,9 +947,12 @@ namespace ts.Completions {
             // Completion should work in the brackets
             const tag = getJsDocTagAtPosition(currentToken, position);
             if (tag) {
+                /* https://coderwall.com/p/zbc2zw/the-comment-toggle-trick
                 if (tag.tagName.pos <= position && position <= tag.tagName.end) {
                     return { kind: CompletionDataKind.JsDocTagName };
                 }
+                /*/
+                //*/
                 if (isTagWithTypeExpression(tag) && tag.typeExpression && tag.typeExpression.kind === SyntaxKind.JSDocTypeExpression) {
                     currentToken = getTokenAtPosition(sourceFile, position);
                     if (!currentToken ||
