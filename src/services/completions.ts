@@ -909,34 +909,46 @@ namespace ts.Completions {
                 /*/
                 const lineStart = getLineStartPositionForPosition(position, sourceFile);
                 const jsdocFragment = sourceFile.text.substring(lineStart, position);
-                // const match =
-                //     // Support for inline jsdoc tag (for @link etc)
-                //     /^(?!.*@\w+).+?\{\s*(@)?$/.exec(jsdocFragment) ||
-                //     // or jsdoc tag will be listed if there is more than one whitespace after "*"
-                //     /^(?:\s*\/\*\*|[*\s]+(?=\s))?\s+(@)?$/.exec(jsdocFragment);
-
+                // // e.g - [link to{}]
+                // // inline jsdoc tag の場合検証が複雑になるので、line に @w+ が含まれない場合は、
+                // // ほぼ無条件で inline jsdoc tag の completion を可能とする
+                // // 2020/04/13 - or /^(?!\s+\*?\s+@\w+).*\{$/ (?)
+                // let match = /^(?!.*@\w+).+\{\s*(@)?$/.exec(jsdocFragment);
                 // if (match) {
                 //     return {
-                //         // The current position is next to the '@' sign, when no tag name being provided yet.
-                //         // Provide a full list of tag names
+                //         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
+                //     };
+                // }
+                // const reJSDocFragment = /^(?:\s*\/\*\*\s+|\s+\*?\s+)(@(?:\w+)?)?/g;
+                // match = reJSDocFragment.exec(jsdocFragment);
+                // if (match && reJSDocFragment.lastIndex === jsdocFragment.length) {
+                //     return {
                 //         kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
                 //     };
                 // }
-
-                // e.g - [link to{}]
-                // inline jsdoc tag の場合検証が複雑になるので、line に @w+ が含まれない場合は、
-                // ほぼ無条件で inline jsdoc tag の completion を可能とする
-                let match = /^(?!.*@\w+).+\{\s*(@)?$/.exec(jsdocFragment);
-                if (match) {
-                    return {
-                        kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
-                    };
-                }
-                const reJSDocFragment = /^(?:\s*\/\*\*\s+|\s+\*?\s+)(@(?:\w+)?)?/g;
-                match = reJSDocFragment.exec(jsdocFragment);
+                // let match = /^(?!.*@\w+).+\{\s*(@)?$/.exec(jsdocFragment);
+                // if (match) {
+                //     return {
+                //         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
+                //     };
+                // }
+                const reJSDocFragment = /^(?:\s*\/\*\*\s+|\s+\*?\s+)(?:(?:(@(?:see|summary|todo|file|fileoverview|overview|classdesc|copyright|deprecated|description|desc).*)|(@(?:param|arg|argument|property|prop|returns|return|throws|exception)\s+(?:\{.+\})?\s*\[?[\w.]+\]?(?:\s+[^{]*)?)|(?!.*@\w+).*?)(\{)\s*)?(@(?:\w+)?)?/g;
+                const match = reJSDocFragment.exec(jsdocFragment);
                 if (match && reJSDocFragment.lastIndex === jsdocFragment.length) {
+                    const [
+                        ,
+                        // @ts-ignore
+                        simple, complexity, // If a tag is found that allows inline jsdoc tag, either will be filled
+                        inlineTagStart,
+                        atWith // which means jsdoc tag name completion
+                    ] = match;
+                    // const ckind: CompletionDataKind = (
+                    //     atWith ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
+                    // ) + ((simple || complexity)? 2: 0);
                     return {
-                        kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
+                        kind: (
+                            atWith ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
+                        ) + (inlineTagStart? 2: 0)
                     };
                 }
                 //*/
