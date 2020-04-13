@@ -227,7 +227,7 @@ test.markerNames().forEach(marker => {
             case 80:
                 completionOpt = {
                     marker,
-                    exact: ["param"]
+                    includes: ["param"]
                 };
                 break;
             case 81: case 82:

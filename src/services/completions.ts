@@ -932,15 +932,13 @@ namespace ts.Completions {
                 //         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
                 //     };
                 // }
-                const reJSDocFragment = /^(?:\s*\/\*\*\s+|\s+\*?\s+)(?:(?:(@(?:see|summary|todo|file|fileoverview|overview|classdesc|copyright|deprecated|description|desc).*)|(@(?:param|arg|argument|property|prop|returns|return|throws|exception)\s+(?:\{.+\})?\s*\[?[\w.]+\]?(?:\s+[^{]*)?)|(?!.*@\w+).*?)(\{)\s*)?(@(?:\w+)?)?/g;
+                const reJSDocFragment = /^(?:\s*\/\*\*\s+|\s+\*?\s+)(?:(?:(?:@(?:see|summary|todo|file|fileoverview|overview|classdesc|copyright|deprecated|description|desc).*)|(?:@(?:param|arg|argument|property|prop|returns|return|throws|exception)\s+(?:\{.+\})?\s*\[?\s*[\w.]+\s*\]?(?:\s+[^{]*)?)|(?!.*@\w+).*?)(\{)\s*)?(@(?:\w+)?)?/g;
                 const match = reJSDocFragment.exec(jsdocFragment);
                 if (match && reJSDocFragment.lastIndex === jsdocFragment.length) {
                     const [
                         ,
-                        // @ts-ignore
-                        simple, complexity, // If a tag is found that allows inline jsdoc tag, either will be filled
-                        inlineTagStart,
-                        atWith // which means jsdoc tag name completion
+                        inlineTagStart, // detect "{"?
+                        atWith          // which means jsdoc tag name completion
                     ] = match;
                     // const ckind: CompletionDataKind = (
                     //     atWith ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag

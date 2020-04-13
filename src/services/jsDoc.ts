@@ -6,7 +6,7 @@ namespace ts.JsDoc {
      */
     type TBD<T> = T | undefined;
 
-    /** 
+    /**
      * [&#64;use JSDoc](https://jsdoc.app/)
      *
      * jsdoc tag names with synonyms {@linkplain https://jsdoc.app/ &#64;use JSDoc}
