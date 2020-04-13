@@ -92,13 +92,20 @@
 //// */
 ////
 
-// also, can support the inline jsdoc tags
+// 7x - also, can support the inline jsdoc tags
 /////**
 //// * link to {/*70*/
 //// */
 ////
 /////**
 //// * link to {@/*71*/
+//// */
+////
+// 8x - additional behavior
+/////**
+//// * @param/*80*/ {object} obj parameter object
+//// * @param {string} obj.url the url {/*81*/}
+//// * @param {string[]} [obj.queries] query parameters {/*82*/}
 //// */
 ////
 
@@ -215,6 +222,22 @@ test.markerNames().forEach(marker => {
             case 50: case 51: case 52:
                 completionOpt = { marker, exact: [] };
                 break;
+
+            // 8x - additional behavior
+            case 80:
+                completionOpt = {
+                    marker,
+                    exact: ["param"]
+                };
+                break;
+            case 81: case 82:
+                completionOpt = {
+                    marker,
+                    exact: ["@link", "@tutorial",]
+                    
+                };
+                break;
+
             //*/
 
             default:
