@@ -6,7 +6,7 @@ namespace ts.JsDoc {
      */
     type TBD<T> = T | undefined;
 
-    /**
+    /** 
      * [&#64;use JSDoc](https://jsdoc.app/)
      *
      * jsdoc tag names with synonyms {@linkplain https://jsdoc.app/ &#64;use JSDoc}
@@ -15,75 +15,75 @@ namespace ts.JsDoc {
      *   + format: <primary>:<synonym>,<synonym>,...
      */
     const jsDocTagNames = [
-        "abstract:virtual", // tag
-        "access", // tag + <package|private|protected|public>
-        "alias", // tag + <aliasNamepath>
-        "async", // tag
-        "augments:extends", // tag + <namepath>
-        "author", // tag + <name> [<emailAddress>]
-        "borrows", // tag + <that namepath> as <this namepath>
-        "callback", // tag + <namepath>
-        "class:constructor", // tag + [<type> <name>]
-        "classdesc", /* tag + <some description> */
-        "constant:const", // tag + [<type> <name>]
-        "constructs", // tag + [<name>]
-        "copyright", /* tag + <some copyright text> */
-        "default:defaultvalue", // tag + [<some value>]
-        "deprecated", /* tag + [<some text>] */
-        "description:desc", /* tag + <some description> */
-        "enum", // tag + [<type>]
-        "event", // tag + <className>#[event:]<eventName>
-        "example", // tag + <javascript? code>
-        "exports", // tag + <moduleName>
-        "external:host", // tag + <NameOfExternal>
-        "field",                      // **not listed at https://jsdoc.app/
-        "file:fileoverview,overview", /* ?tag + <description> */
-        "fires:emits", // tag + <className>#[event:]<eventName>
-        "function:func,method", // tag + [<FunctionName>]
-        "generator", // tag
-        "global", // tag
-        "hideconstructor", // tag
-        "ignore", // tag
-        "implements",  // tag + {typeExpression}
-        "inheritdoc", // tag
-        "inner", // tag
-        "instance", // tag
-        "interface", // tag + [<name>]
-        "kind", // tag + <kindName>
-        "lends", // tag + <namepath>
-        "license", // tag + <identifier>
-        "listens", // tag + <eventName>
-        "member:var", // tag + [<type>] [<name>]
-        "memberof", // tag + <parentNamepath>
-        "mixes", // tag + <OtherObjectPath>
-        "mixin", // tag + [<MixinName>]
-        "module", // tag + [[{<type>}] <moduleName>]
-        "name", // tag + <namePath>
-        "namespace", // tag + [[{<type>}] <SomeName>]
-        "override", // tag
-        "package", // tag + [{typeExpression}]
-        "param:arg,argument", /* tag + [{<type>}] <name> [<some text>] */
-        "private", // tag + [{typeExpression}]
-        "property:prop", /* tag + [{<type>}] <name> [<some text>] */
-        "protected", // tag
-        "public", // tag
-        "readonly", // tag
-        "requires", // tag + <someModuleName>
-        "returns:return", /* tag + [{<type>}] [description] */
-        "see", /* tag + <namepath> | <text> */
-        "since", // tag + <versionDescription>
-        "static", // tag
-        "summary", /* tag + <Summary goes here.> */
-        "template",                   // **not listed at https://jsdoc.app/
-        "this", // tag + <namePath>
-        "throws:exception", /* tag + {<type>} free-form description */
-        "todo", /* tag + <text describing thing to do.> */
-        "tutorial", // tag + <tutorial tag?>
-        "type", // tag + {typeName}
-        "typedef", // tag + [<type>] <namepath>
-        "variation", // tag + <variationNumber>
-        "version", // tag + <version tag>
-        "yields:yield" // tag + [{type}] [description]
+        "abstract:virtual",             // tag
+        "access",                       // tag + <package|private|protected|public>
+        "alias",                        // tag + <aliasNamepath>
+        "async",                        // tag
+        "augments:extends",             // tag + <namepath>
+        "author",                       // tag + <name> [<emailAddress>]
+        "borrows",                      // tag + <that namepath> as <this namepath>
+        "callback",                     // tag + <namepath>
+        "class:constructor",            // tag + [<type> <name>]
+        "classdesc",                    /* tag + <some description> */
+        "constant:const",               // tag + [<type> <name>]
+        "constructs",                   // tag + [<name>]
+        "copyright",                    /* tag + <some copyright text> */
+        "default:defaultvalue",         // tag + [<some value>]
+        "deprecated",                   /* tag + [<some text>] */
+        "description:desc",             /* tag + <some description> */
+        "enum",                         // tag + [<type>]
+        "event",                        // tag + <className>#[event:]<eventName>
+        "example",                      // tag + <javascript? code>
+        "exports",                      // tag + <moduleName>
+        "external:host",                // tag + <NameOfExternal>
+        "field",                        // **not listed at https://jsdoc.app/
+        "file:fileoverview,overview",   /* ?tag + <description> */
+        "fires:emits",                  // tag + <className>#[event:]<eventName>
+        "function:func,method",         // tag + [<FunctionName>]
+        "generator",                    // tag
+        "global",                       // tag
+        "hideconstructor",              // tag
+        "ignore",                       // tag
+        "implements",                   // tag + {typeExpression}
+        "inheritdoc",                   // tag
+        "inner",                        // tag
+        "instance",                     // tag
+        "interface",                    // tag + [<name>]
+        "kind",                         // tag + <kindName>
+        "lends",                        // tag + <namepath>
+        "license",                      // tag + <identifier>
+        "listens",                      // tag + <eventName>
+        "member:var",                   // tag + [<type>] [<name>]
+        "memberof",                     // tag + <parentNamepath>
+        "mixes",                        // tag + <OtherObjectPath>
+        "mixin",                        // tag + [<MixinName>]
+        "module",                       // tag + [[{<type>}] <moduleName>]
+        "name",                         // tag + <namePath>
+        "namespace",                    // tag + [[{<type>}] <SomeName>]
+        "override",                     // tag
+        "package",                      // tag + [{typeExpression}]
+        "param:arg,argument",           /* tag + [{<type>}] <name> [<some text>] */
+        "private",                      // tag + [{typeExpression}]
+        "property:prop",                /* tag + [{<type>}] <name> [<some text>] */
+        "protected",                    // tag
+        "public",                       // tag
+        "readonly",                     // tag
+        "requires",                     // tag + <someModuleName>
+        "returns:return",               /* tag + [{<type>}] [description] */
+        "see",                          /* tag + <namepath> | <text> */
+        "since",                        // tag + <versionDescription>
+        "static",                       // tag
+        "summary",                      /* tag + <Summary goes here.> */
+        "template",                     // **not listed at https://jsdoc.app/
+        "this",                         // tag + <namePath>
+        "throws:exception",             /* tag + {<type>} free-form description */
+        "todo",                         /* tag + <text describing thing to do.> */
+        "tutorial",                     // tag + <tutorial tag?>
+        "type",                         // tag + {typeName}
+        "typedef",                      // tag + [<type>] <namepath>
+        "variation",                    // tag + <variationNumber>
+        "version",                      // tag + <version tag>
+        "yields:yield"                  // tag + [{type}] [description]
     ];
     /**
      * [&#64;use JSDoc](https://jsdoc.app/)
