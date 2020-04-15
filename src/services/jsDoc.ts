@@ -236,12 +236,14 @@ namespace ts.JsDoc {
         let documentation: TBD<SymbolDisplayPart[]>;
 
         // TODO: "tutorial" does contains at both block and inline
-        const entry = find(getJSDocTagCompletions(), finder) || find(getInlineJSDocTagCompletions(), finder);
+        const entry = find(getJSDocTagCompletions(), finder) || find(getInlineJSDocTagCompletions(), finder)
+            || find(getJSDocTagNameCompletions(), finder) || find(getInlineJSDocTagNameCompletions(), finder);
         const kind  = entry && entry.kind || ScriptElementKind.unknown;
 
         if (entry) {
             let synonyms: TBD<string[]>;
-            const tagName = entry.name.substring(1);
+            let tagName = entry.name;
+            if (tagName[0] === "@") tagName = tagName.substring(1);
             const finder2 = (name: string) => name.indexOf(tagName) === 0;
             const data = find(jsDocTagNames, finder2) || find(inlinejsDocTagNames, finder2);
             if (data && data.indexOf(":") > 0) {
@@ -260,7 +262,9 @@ namespace ts.JsDoc {
                 // https://jsdoc.app/tags-inline-link.html
                 //                        ^^^^^^^
                 // TODO: more smarty code
-                text: `${synonyms? `synonyms: ${
+                text: `${
+                    Diagnostics.use_strict_directive_used_here.message
+                }\n\n${synonyms? `synonyms: ${
                     synonyms.map(s => "@" + s).join(", ")}\n\n`: ""
                 }More details - [@use JSDoc](https://jsdoc.app/tags-${suffix}${tagName}.html)`,
                 kind: "keyword"
