@@ -5,4 +5,254 @@
 //// * /**/
 //// */
 
-verify.completions({ marker: "", includes: { name: "@property", text: "@property", kind: "keyword" } });
+
+// 1x - jsdoc tags are listed when there is more than one whitespace after "*"
+/////**
+//// * /*10*/
+//// */
+////
+/////**
+//// *       /*11*/
+//// */
+////
+
+// 2x - Also, if there are two or more blanks at the beginning of the line
+/////**
+////  /*20*/
+//// */
+////
+/////**
+////      /*21*/
+//// */
+////
+
+// 3x - jsdoc tag names will be listed
+/////** @/*30*/ */
+////
+/////**    @/*31*/ */
+////
+/////**
+//// * @/*32*/
+//// */
+////
+/////**
+//// *       @/*33*/
+//// */
+////
+/////**
+////  @/*34*/
+//// */
+////
+/////**
+////        @/*35*/
+//// */
+////
+/////**
+//// * @pa/*36*/
+//// */
+////
+
+// 4x - jsdoc tag name completions should not occur
+/////**@/*40*/ */
+////
+/////**
+//// *@/*41*/
+//// */
+////
+/////**
+//// * @type {@/*42*/
+//// */
+////
+/////**
+//// +@/*43*/
+//// */
+////
+/////** some description @/*44*/ */
+////
+/////**
+//// * ### jsdoc @/*45*/
+//// */
+////
+/////**
+////@/*46*/
+//// */
+////
+
+// 5x - jsdoc tag completions should not occur
+/////**
+//// */*50*/
+//// */
+////
+/////**
+//// /*51*/
+//// */
+////
+/////**
+/////*52*/
+//// */
+////
+
+// 7x - also, can support the inline jsdoc tags
+/////**
+//// * link to {/*70*/
+//// */
+////
+/////**
+//// * link to {@/*71*/
+//// */
+////
+// 8x - additional behavior
+/////**
+//// * @param/*80*/ {object} obj parameter object
+//// * @param {string} obj.url the url {/*81*/}
+//// * @param {string[]} [obj.queries] query parameters {/*82*/}
+//// */
+////
+
+verify.completions({ marker: "", includes: { name: "@property"/* , text: "@property" */, kind: "jsDocTag" } });
+
+
+//
+// test for src/services/completions.ts#getCompletionData.insideComment.hasDocComment (#37546)
+//
+test.markerNames().forEach(marker => {
+    if (marker) {
+        let completionOpt: FourSlashInterface.CompletionsOptions;
+        const n = +marker;
+        switch (n) {
+            /* https://coderwall.com/p/zbc2zw/the-comment-toggle-trick
+
+            // - - - - - -
+            // before fix
+            // - - - - - -
+
+            // jsdoc tags will be listed when there is more than one whitespace after "*"
+            case 10: case 11:
+            // Also, if there are two or more blanks at the beginning of the line
+            case 20: case 21:
+
+            // 5x - jsdoc tag completions should not occur
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            //  jsdoc tags will be listed but this does not the expected behavior
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            case 50: case 51: case 52:
+                completionOpt = { marker, includes: ["@abstract", "@access"] };
+                break;
+
+            // 3x - jsdoc tag names will be listed
+            case 30: case 31: case 32: case 33: case 34: case 35: case 36:
+
+            // 4x - jsdoc tag name completions should not occur
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            //  jsdoc tag names will be listed but this does not the expected behavior
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            case 40: case 41: case 42: case 43: case 44: case 45: case 46:
+
+            // does not the expected behavior... because ts.JsDoc@jsDocTagNames is missing inline jsdoc tag name
+            // In other words, inline jsdoc tag is interpreted as not intending to support
+            case 71:
+                completionOpt = {
+                    marker,
+                    triggerCharacter: "@",
+                    includes: ["package", "param"]
+                };
+                break;
+            /*/
+
+            // - - - - - -
+            // after fix
+            // - - - - - -
+
+            // jsdoc tags will be listed when there is more than one whitespace after "*"
+            case 10: case 11:
+            // Also, if there are two or more blanks at the beginning of the line
+            case 20: case 21:
+                completionOpt = { marker, includes: [
+                    "@abstract", "@access",
+                ]};
+                break;
+
+            // also, can support the inline jsdoc tags
+            case 70:
+                completionOpt = { marker, includes: [
+                    "@link", "@tutorial",
+                ]};
+                break;
+
+            // 3x - jsdoc tag names will be listed
+            case 30: case 31: case 32: case 33: case 34: case 35: case 36:
+
+            // // 4x - jsdoc tag name completions should not occur
+            // // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            // //  this behavior does not by getCompletionData.insideComment.hasDocComment clause
+            // // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            // case 40: case 41: case 42:
+                completionOpt = {
+                    marker,
+                    triggerCharacter: "@",
+                    includes: ["package", "param"]
+                };
+                break;
+
+            // also, can support the inline jsdoc tags
+            case 71:
+                completionOpt = {
+                    marker,
+                    triggerCharacter: "@",
+                    includes: ["link", "tutorial"]
+                };
+                break;
+
+            // 4x - jsdoc tag name completions should not occur
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            //  before the fix, jsdoc tag names was listed but no longer appears
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            case 40: case 41: case 42: case 43: case 44: case 45: case 46:
+                completionOpt = {
+                    marker,
+                    triggerCharacter: "@",
+                    exact: []
+                };
+                break;
+
+            // 5x - jsdoc tag completions should not occur
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            //  before the fix, jsdoc tags was listed but no longer appears
+            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+            case 50: case 51: case 52:
+                completionOpt = { marker, exact: [] };
+                break;
+
+            // 8x - additional behavior
+            case 80:
+                completionOpt = {
+                    marker,
+                    includes: ["param"]
+                };
+                break;
+            case 81: case 82:
+                completionOpt = {
+                    marker,
+                    includes: ["@link", "@linkcode", "@linkplain", "@tutorial"]
+                    // TODO: cannot pass "exact", why?
+                    // exact: ["@link", "@linkcode", "@linkplain", "@tutorial"]
+                    
+                };
+                break;
+
+            //*/
+
+            default:
+                break;
+        }
+        if (completionOpt) {
+            try {
+                verify.completions(completionOpt);
+                // debug.printCompletionListMembers();
+            } catch (e) {
+                console.log(e.message);
+                console.log("please switch the code of src/services/completions.ts#getCompletionData");
+            }
+        }
+    }
+});

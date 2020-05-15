@@ -199,8 +199,15 @@ namespace ts.Completions {
             case CompletionDataKind.JsDocTag:
                 // If the current position is a jsDoc tag, only tags should be provided for completion
                 return jsdocCompletionInfo(JsDoc.getJSDocTagCompletions());
+
+            case CompletionDataKind.InlineJsDocTagName:
+                return jsdocCompletionInfo(JsDoc.getInlineJSDocTagNameCompletions());
+            case CompletionDataKind.InlineJsDocTag:
+                return jsdocCompletionInfo(JsDoc.getInlineJSDocTagCompletions());
+
             case CompletionDataKind.JsDocParameterName:
                 return jsdocCompletionInfo(JsDoc.getJSDocParameterNameCompletions(completionData.tag));
+
             default:
                 return Debug.assertNever(completionData);
         }
@@ -662,9 +669,11 @@ namespace ts.Completions {
                 const { request } = symbolCompletion;
                 switch (request.kind) {
                     case CompletionDataKind.JsDocTagName:
-                        return JsDoc.getJSDocTagNameCompletionDetails(name);
                     case CompletionDataKind.JsDocTag:
-                        return JsDoc.getJSDocTagCompletionDetails(name);
+                    case CompletionDataKind.InlineJsDocTagName:
+                    case CompletionDataKind.InlineJsDocTag:
+                        return JsDoc.getJSDocTagCompletionDetails(name, request.kind);
+
                     case CompletionDataKind.JsDocParameterName:
                         return JsDoc.getJSDocParameterNameCompletionDetails(name);
                     default:
@@ -754,7 +763,15 @@ namespace ts.Completions {
         return completion.type === "symbol" ? completion.symbol : undefined;
     }
 
-    const enum CompletionDataKind { Data, JsDocTagName, JsDocTag, JsDocParameterName }
+    export const enum CompletionDataKind {
+        Data,
+        JsDocTagName,
+        JsDocTag,
+        InlineJsDocTagName,
+        InlineJsDocTag,
+        JsDocParameterName,
+        ShiftInline = JsDocTag
+    }
     /** true: after the `=` sign but no identifier has been typed yet. Else is the Identifier after the initializer. */
     type IsJsxInitializer = boolean | Identifier;
     interface CompletionData {
@@ -778,7 +795,11 @@ namespace ts.Completions {
         /** In JSX tag name and attribute names, identifiers like "my-tag" or "aria-name" is valid identifier. */
         readonly isJsxIdentifierExpected: boolean;
     }
-    type Request = { readonly kind: CompletionDataKind.JsDocTagName | CompletionDataKind.JsDocTag } | { readonly kind: CompletionDataKind.JsDocParameterName, tag: JSDocParameterTag };
+    type Request = {
+        readonly kind: CompletionDataKind.JsDocTagName | CompletionDataKind.JsDocTag | CompletionDataKind.InlineJsDocTagName | CompletionDataKind.InlineJsDocTag
+    } | {
+        readonly kind: CompletionDataKind.JsDocParameterName, tag: JSDocParameterTag
+    };
 
     export const enum CompletionKind {
         ObjectPropertyDeclaration,
@@ -870,33 +891,83 @@ namespace ts.Completions {
         let isInSnippetScope = false;
         if (insideComment) {
             if (hasDocComment(sourceFile, position)) {
+                // When completion is requested without "@", we will have check to make sure that
+                // there are no comments prefix the request position. We will only allow "*" and space.
+                // e.g
+                //   /** |c| */
+                //
+                //   /**
+                //     |c|
+                //    */
+                //
+                //   /**
+                //    * |c|
+                //    */
+                //
+                //   /**
+                //    *         |c|
+                //    */
+                /* https://coderwall.com/p/zbc2zw/the-comment-toggle-trick
                 if (sourceFile.text.charCodeAt(position - 1) === CharacterCodes.at) {
                     // The current position is next to the '@' sign, when no tag name being provided yet.
                     // Provide a full list of tag names
                     return { kind: CompletionDataKind.JsDocTagName };
                 }
                 else {
-                    // When completion is requested without "@", we will have check to make sure that
-                    // there are no comments prefix the request position. We will only allow "*" and space.
-                    // e.g
-                    //   /** |c| /*
-                    //
-                    //   /**
-                    //     |c|
-                    //    */
-                    //
-                    //   /**
-                    //    * |c|
-                    //    */
-                    //
-                    //   /**
-                    //    *         |c|
-                    //    */
                     const lineStart = getLineStartPositionForPosition(position, sourceFile);
-                    if (!/[^\*|\s(/)]/.test(sourceFile.text.substring(lineStart, position))) {
+                    // if (
+                    //     // by "/[^/\s\*]/", it becomes an correct regex (But that doesn't work as expected
+                    //     !/[^/\s\*]/.test(sourceFile.text.substring(lineStart, position))
+                    // ) {
+                    //     return { kind: CompletionDataKind.JsDocTag };
+                    // }
+                    if (!(sourceFile.text.substring(lineStart, position).match(/[^\*|\s|(/\*\*)]/))) {
                         return { kind: CompletionDataKind.JsDocTag };
                     }
                 }
+                /*/
+                const lineStart = getLineStartPositionForPosition(position, sourceFile);
+                const jsdocFragment = sourceFile.text.substring(lineStart, position);
+                // // e.g - [link to{}]
+                // // inline jsdoc tag の場合検証が複雑になるので、line に @w+ が含まれない場合は、
+                // // ほぼ無条件で inline jsdoc tag の completion を可能とする
+                // // 2020/04/13 - or /^(?!\s+\*?\s+@\w+).*\{$/ (?)
+                // let match = /^(?!.*@\w+).+\{\s*(@)?$/.exec(jsdocFragment);
+                // if (match) {
+                //     return {
+                //         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
+                //     };
+                // }
+                // const reJSDocFragment = /^(?:\s*\/\*\*\s+|\s+\*?\s+)(@(?:\w+)?)?/g;
+                // match = reJSDocFragment.exec(jsdocFragment);
+                // if (match && reJSDocFragment.lastIndex === jsdocFragment.length) {
+                //     return {
+                //         kind: match[1] ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
+                //     };
+                // }
+                // let match = /^(?!.*@\w+).+\{\s*(@)?$/.exec(jsdocFragment);
+                // if (match) {
+                //     return {
+                //         kind: match[1] ? CompletionDataKind.InlineJsDocTagName: CompletionDataKind.InlineJsDocTag
+                //     };
+                // }
+                const reJSDocFragment = /^(?:\s*\/\*\*\s+|\s+\*?\s+)(?:(?:(?:@(?:see|deprecated|classdesc|copyright|todo|fileoverview|summary|file|desc(?:ription)?|overview)\s+.*)|(?:@(?:param|returns?|throws|property|argument|prop|arg|exception)\s+(?:\{.+\})?\s*\[?\s*[\w.]+\s*\]?(?:\s+[^{]*)?)|(?=.*{\s*@\w+\s+[^}]+}).*|(?!.*@\w+).*?)(\{)\s*)?(@(?:\w+)?)?/g;
+                const match = reJSDocFragment.exec(jsdocFragment);
+                if (match && reJSDocFragment.lastIndex === jsdocFragment.length) {
+                    const [
+                        ,
+                        inlineTagStart, // detect "{"?
+                        atWith          // which means jsdoc tag name completion
+                    ] = match;
+                    // const kind: CompletionDataKind = (
+                    //     atWith ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag
+                    // ) + (inlineTagStart? 2: 0);
+                    // return { kind };
+                    return {
+                        kind: (atWith ? CompletionDataKind.JsDocTagName: CompletionDataKind.JsDocTag) + (inlineTagStart? CompletionDataKind.ShiftInline: 0)
+                    };
+                }
+                //*/
             }
 
             // Completion should work inside certain JsDoc tags. For example:
@@ -904,10 +975,14 @@ namespace ts.Completions {
             // Completion should work in the brackets
             const tag = getJsDocTagAtPosition(currentToken, position);
             if (tag) {
+                /* https://coderwall.com/p/zbc2zw/the-comment-toggle-trick
                 if (tag.tagName.pos <= position && position <= tag.tagName.end) {
                     return { kind: CompletionDataKind.JsDocTagName };
                 }
+                /*/
+                //*/
                 if (isTagWithTypeExpression(tag) && tag.typeExpression && tag.typeExpression.kind === SyntaxKind.JSDocTypeExpression) {
+                    // TODO: whether following statement is needed
                     currentToken = getTokenAtPosition(sourceFile, position);
                     if (!currentToken ||
                         (!isDeclarationName(currentToken) &&

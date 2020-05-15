@@ -248,5 +248,136 @@ export interface BrowserRouterProps {
                 }
             });
         });
+
+        describe("test of src/services/completions.ts#getCompletionData (#37546)", () => {
+
+            // check jsdoc tag (not strictly)
+            const checkJsdocTagNoStrict = (completionInfo?: protocol.CompletionInfo) => {
+                return completionInfo?.entries?.every(entry => /@\w+/.test(entry.name));
+            };
+            // shorthands
+            const execCompletionsRequest = (requestArgs: protocol.CompletionsRequestArgs) => {
+                return executeSessionRequest<protocol.CompletionsRequest, protocol.CompletionInfoResponse>(session, protocol.CommandTypes.CompletionInfo, requestArgs);
+            };
+            const execEditRequest = (edit: protocol.CodeEdit) => {
+                return executeSessionRequest<protocol.UpdateOpenRequest, protocol.Response>(session, protocol.CommandTypes.UpdateOpen, {
+                    changedFiles: [{
+                        fileName: dummy.path,
+                        textChanges: [edit]
+                    }]
+                });
+            };
+            const dummy: File = {
+                path: "/dummy.ts",
+                content: `/** */
+function dummy(a: string) {}
+`
+            };
+
+            let session: TestSession;
+            let requestArgs!: protocol.CompletionsRequestArgs;
+            before(() => {
+                session = createSession(createServerHost([dummy]));
+                openFilesForSession([dummy], session);
+                requestArgs = {
+                    file: dummy.path,
+                    line: 1,
+                    offset: 4,
+                    includeExternalModuleExports: true,
+                    includeInsertTextCompletions: true
+                };
+            });
+
+            // /**|c| */
+            // function dummy(a: string) {}
+            //
+            // ^--offset=1
+            it ("completionInfo request will be failed [/**|c| */]", () => {
+                // "success":false,"message":"No content available."
+                assert.equal(execCompletionsRequest(requestArgs), undefined);
+            });
+
+            // /** |c|*/
+            // function dummy(a: string) {}
+            //
+            // ^--offset=1
+            it ("CompletionInfo.entries is CompletionDataKind.JsDocTag [/** |c|*/]", () => {
+                requestArgs.offset = 5;
+                const response = execCompletionsRequest(requestArgs);
+                assert.equal(checkJsdocTagNoStrict(response), true);
+            });
+
+            // /**
+            //  +|c|
+            //  */
+            // function dummy(a: string) {}
+            //
+            // ^--offset=1
+            it ("completionInfo request will be failed [ +|c|]", () => {
+                execEditRequest({
+                    newText: "\n + \n",
+                    start: { line: 1, offset: 4 },
+                    end: { line: 1, offset: 4 }
+                });
+                requestArgs.line = 2;
+                requestArgs.offset = 3;
+                assert.equal(execCompletionsRequest(requestArgs), undefined);
+            });
+
+            // /**
+            //  +@|c|
+            //  */
+            // function dummy(a: string) {}
+            //
+            // ^--offset=1
+            it ("completionInfo request will be failed [ +@|c|]", () => {
+                execEditRequest({
+                    newText: "+@",
+                    start: { line: 2, offset: 2 },
+                    end: { line: 2, offset: 2 }
+                });
+                requestArgs.offset = 4;
+                requestArgs.triggerCharacter = "@";
+                assert.equal(execCompletionsRequest(requestArgs), undefined);
+            });
+
+            // // /**
+            // //  *|c|
+            // //  */
+            // // function dummy(a: string) {}
+            // //
+            // // ^--offset=1
+            // it ("CompletionInfo.entries is CompletionDataKind.JsDocTag [ *|c|]", () => {
+            //     execEditRequest({
+            //         newText: "*",
+            //         start: { line: 2, offset: 2 },
+            //         end: { line: 2, offset: 3 }
+            //     });
+            //     requestArgs.offset = 3;
+            //     requestArgs.triggerCharacter = undefined;
+            //     const response = execCompletionsRequest(requestArgs);
+            //     assert.equal(checkJsdocTagNoStrict(response), true);
+            // });
+
+            // // /**
+            // //  *@|c|
+            // //  */
+            // // function dummy(a: string) {}
+            // //
+            // // ^--offset=1
+            // it ("CompletionInfo.entries is CompletionDataKind.JsDocTagName [ *@|c|]", () => {
+            //     execEditRequest({
+            //         newText: "*@",
+            //         start: { line: 2, offset: 2 },
+            //         end: { line: 2, offset: 2 }
+            //     });
+            //     requestArgs.offset = 4;
+            //     requestArgs.triggerCharacter = "@";
+            //     const response = execCompletionsRequest(requestArgs);
+            //     assert.equal(
+            //         response?.entries?.every(entry => /\w+/.test(entry.name)), true
+            //     );
+            // });
+        });
     });
 }

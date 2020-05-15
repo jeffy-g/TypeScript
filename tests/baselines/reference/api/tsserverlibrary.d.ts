@@ -6237,7 +6237,11 @@ declare namespace ts {
          */
         jsxAttribute = "JSX attribute",
         /** String literal */
-        string = "string"
+        string = "string",
+        /** jsDocTag */
+        jsDocTag = "jsDocTag",
+        /** inlineJsDocTag */
+        inlineJsDocTag = "inlineJsDocTag"
     }
     enum ScriptElementKindModifier {
         none = "",

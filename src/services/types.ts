@@ -1352,6 +1352,11 @@ namespace ts {
 
         /** String literal */
         string = "string",
+
+        /** jsDocTag */
+        jsDocTag = "jsDocTag",
+        /** inlineJsDocTag */
+        inlineJsDocTag = "inlineJsDocTag",
     }
 
     export const enum ScriptElementKindModifier {
