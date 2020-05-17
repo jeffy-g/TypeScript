@@ -384,14 +384,16 @@ namespace ts.JsDoc {
 
     const highlightSyntax = (syntax: string) => {
         if (/\n/.test(syntax)) {
-            const vars = syntax.split("\n");
-            syntax = "";
-            vars.forEach(rav => {
-                syntax += `\`${rav}\`  \n`;
-            });
-            return syntax;
-        }
-        else {
+            // const vars = syntax.split("\n");
+            // syntax = "";
+            // vars.forEach(rav => {
+            //     syntax += `\`${rav}\`  \n`;
+            // });
+            // return syntax;
+            return syntax.split("\n").reduce(
+                (acc, line, idx, array) => acc + `\`${line}\`${(idx < array.length - 1) ? "  \n": ""}`, ""
+            );
+        } else {
             return `\`${syntax}\``;
         }
     };
