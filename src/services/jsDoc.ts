@@ -194,7 +194,7 @@ namespace ts.JsDoc {
             see: "@see <namepath>",
             since: "@since <versionDescription>",
             summary: "@summary Summary goes here.",
-            template: "@template <token without expression>", /* customized */
+            template: "@template <token without expression> [<description>]", /* customized */
             this: "@this <namePath>",
             throws: "@throws free-form description",
             todo: "@todo text describing thing to do.",
