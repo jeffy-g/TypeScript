@@ -159,6 +159,12 @@ namespace ts.JsDoc {
             augments: "@augments <namepath>",
             author: "@author <name> [<emailAddress>]",
             borrows: "@borrows <that namepath> as <this namepath>",
+            /**
+             * &#64;callback is similar to &#64;typedef,  
+             * but it specifies a function type instead of an object type
+             * 
+             * see {@link https://www.typescriptlang.org/docs/handbook/type-checking-javascript-files.html#typedef-callback-and-param|Type Checking JavaScript Files}
+             */
             callback: "@callback <namepath>",
             class: "@class [<type> <name>]",
             classdesc: "@classdesc <some description>",
@@ -194,12 +200,12 @@ namespace ts.JsDoc {
             see: "@see <namepath>",
             since: "@since <versionDescription>",
             summary: "@summary Summary goes here.",
-            template: "@template <token without expression> [<description>]", /* customized */
+            template: "@template {typeName} <template token> [<description>]", /* customized */
             this: "@this <namePath>",
             throws: "@throws free-form description",
             todo: "@todo text describing thing to do.",
             tutorial: "@tutorial",
-            type: "@type {typeName}",
+            type: "@type {typeName} [<description>]", /* customized */
             typedef: "@typedef [<type>] <namepath>",
             variation: "@variation <variationNumber>",
             yields: "@yields [{type}] [description]"
