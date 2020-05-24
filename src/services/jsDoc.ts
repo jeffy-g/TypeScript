@@ -302,7 +302,7 @@ namespace ts.JsDoc {
      *
      * @param name jsdoc tag (name)
      */
-    const emitCompletionEntry = (name: string, kind = ScriptElementKind.jsDocTag) => ({ name, kind, kindModifiers: "", sortText: Completions.SortText.LocationPriority }) as CompletionEntry;
+    const emitCompletionEntry = (name: string, kind = ScriptElementKind.jsDocTag) => ({ name, kind, kindModifiers: "", sortText: "0", isRecommended: true }) as CompletionEntry;
     /**
      * jsDocTag Completion Entry Emitter
      *
@@ -428,8 +428,8 @@ namespace ts.JsDoc {
             let synonyms: TBD<string[]>;
             const tagName = hasAt ? entry.name.substring(1) : entry.name; {
                 const uniqName = tagName + ":";
-                const findPredicate = (n: string) => n.indexOf(uniqName) === 0;
-                const tagWithSyms = find(isBlock? jsDocTagNames : inlinejsDocTagNames, findPredicate);
+                // const findPredicate = (n: string) => n.indexOf(uniqName) === 0;
+                const tagWithSyms = find(isBlock? jsDocTagNames : inlinejsDocTagNames, n => n.indexOf(uniqName) === 0);
                 if (tagWithSyms/*  && tagWithSyms.indexOf(":") > 0 */) {
                     synonyms = tagWithSyms.split(":")[1].split(",");
                 }
