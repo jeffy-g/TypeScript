@@ -55,10 +55,9 @@
 //// /** @param /*16*/ */
 
 verify.completions(
-    // TODO: Since the tag marked as synonyms is hidden, it does not appear in the completion list.
-    { marker: ["1", "2"], includes: ["class", "constructor", "param", "type", "function", "method", "template"] },
+    { marker: ["1", "2"], includes: ["constructor", "param", "type", "method", "template"] },
     { marker: ["3", "15", "16"], exact: [] },
     { marker: ["4", "5", "8"], includes: { name: "number", sortText: completion.SortText.GlobalsOrKeywords } },
     { marker: ["6", "7", "14"], exact: undefined },
-    { marker: ["9", "10", "11", "12", "13"], includes: ["@param", "@argument", "@returns"] },
+    { marker: ["9", "10", "11", "12", "13"], includes: ["@argument", "@returns"] },
 );

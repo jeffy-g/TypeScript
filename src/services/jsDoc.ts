@@ -160,9 +160,9 @@ namespace ts.JsDoc {
             author: "@author <name> [<emailAddress>]",
             borrows: "@borrows <that namepath> as <this namepath>",
             /**
-             * &#64;callback is similar to &#64;typedef,  
+             * &#64;callback is similar to &#64;typedef,
              * but it specifies a function type instead of an object type
-             * 
+             *
              * see {@link https://www.typescriptlang.org/docs/handbook/type-checking-javascript-files.html#typedef-callback-and-param|Type Checking JavaScript Files}
              */
             callback: "@callback <namepath>",
@@ -302,7 +302,8 @@ namespace ts.JsDoc {
      *
      * @param name jsdoc tag (name)
      */
-    const emitCompletionEntry = (name: string, kind = ScriptElementKind.jsDocTag) => ({ name, kind, kindModifiers: "", sortText: "0", isRecommended: true }) as CompletionEntry;
+    // DEVNOTE: 2020/5/30 18:39:43 - The `isRecommended` property affects the fourslash test, so do not use it carelessly
+    const emitCompletionEntry = (name: string, kind = ScriptElementKind.jsDocTag) => ({ name, kind, kindModifiers: "", sortText: "0"/* , isRecommended: true */ }) as CompletionEntry;
     /**
      * jsDocTag Completion Entry Emitter
      *
@@ -533,9 +534,9 @@ namespace ts.JsDoc {
     /**
      * Checks if position points to a valid position to add JSDoc comments, and if so,
      * returns the appropriate template. Otherwise returns an empty string.
-     * 
+     *
      * Valid positions are
-     * 
+     *
      *   - outside of comments, statements, and expressions, and
      *   - preceding a:
      *     - function/constructor/method declaration
@@ -551,7 +552,7 @@ namespace ts.JsDoc {
      *   - If the keystroke sequence "/&#42;&#42;" induced the call, we also check that the next
      * non-whitespace character is '&#42;', which (approximately) indicates whether we added
      * the second '&#42;' to complete an existing (JSDoc) comment.
-     * 
+     *
      * @param fileName The file in which to perform the check.
      * @param position The (character-indexed) position in the file where the check should
      *     be performed.
