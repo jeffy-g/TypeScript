@@ -324,12 +324,11 @@ namespace ts.JsDoc {
     /**
      * This function will only be executed the first time
      *
-     * @param names jsdoc tag name (with @?)
      * @param kind ScriptElementKind.jsDocTag or ScriptElementKind.inlineJsDocTag
-     * @version 2.2
+     * @version 3.0
      * @date 2020/5/15
      */
-    const parseJSDocTagNamesForCompletionEntry = (names: string[], kind = ScriptElementKind.jsDocTag) => {
+    const parseJSDocTagNamesForCompletionEntry = (kind = ScriptElementKind.jsDocTag) => {
         const entries: CompletionEntry[] = [];
         const [
             tagNamesData,   // jsDocTagNames or inlinejsDocTagNames
@@ -337,8 +336,8 @@ namespace ts.JsDoc {
             syntaxData      // syntaxMap.block or syntaxMap.inline
         ] = selectJSDocData(kind);
 
-        for (let nameIndex = 0, index = 0, end = names.length; nameIndex < end;) {
-            let name = names[nameIndex++];
+        for (let nameIndex = 0, index = 0, end = tagNamesData.length; nameIndex < end;) {
+            let name = tagNamesData[nameIndex++];
             if (name.indexOf(":") > 0) {
                 // "link:linkcode,linkplain" -> ["link", "linkcode,linkplain"]
                 let syms: string;
@@ -352,6 +351,7 @@ namespace ts.JsDoc {
                 }
 
                 for (const sym of syms.split(",")) {
+                    // DEVNOTE: 2020/5/30 20:59:00 - expand synonyms to tagNamesData (e.g jsDocTagNames.push("extends"))
                     tagNamesData.push(sym);
                     if (documentData) {
                         documentations.push(`${sym}|${documentData}`);
@@ -371,11 +371,11 @@ namespace ts.JsDoc {
 
     export function getJSDocTagNameCompletions(): CompletionEntry[] {
         if (jsDocTagNameCompletionEntries) return jsDocTagNameCompletionEntries;
-        return jsDocTagNameCompletionEntries = parseJSDocTagNamesForCompletionEntry(jsDocTagNames);
+        return jsDocTagNameCompletionEntries = parseJSDocTagNamesForCompletionEntry();
     }
     export function getInlineJSDocTagNameCompletions(): CompletionEntry[] {
         if (jsDocInlineTagNameCompletionEntries) return jsDocInlineTagNameCompletionEntries;
-        return jsDocInlineTagNameCompletionEntries = parseJSDocTagNamesForCompletionEntry(inlinejsDocTagNames, ScriptElementKind.inlineJsDocTag);
+        return jsDocInlineTagNameCompletionEntries = parseJSDocTagNamesForCompletionEntry(ScriptElementKind.inlineJsDocTag);
     }
 
     export function getJSDocTagCompletions(): CompletionEntry[] {
