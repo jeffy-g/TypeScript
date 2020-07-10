@@ -4160,6 +4160,7 @@ namespace ts {
         UseAliasDefinedOutsideCurrentScope      = 1 << 14,  // Allow non-visible aliases
         UseSingleQuotesForStringLiteralType     = 1 << 28,  // Use single quotes for string literal type
         NoTypeReduction                         = 1 << 29,  // Don't call getReducedType
+        NoUndefinedOptionalParameterType        = 1 << 30,  // Do not add undefined to optional parameter type
 
         // Error handling
         AllowThisInObjectLiteral                = 1 << 15,
@@ -4336,6 +4337,9 @@ namespace ts {
     /* @internal */
     export type AnyImportOrRequire = AnyImportSyntax | RequireVariableDeclaration;
 
+    /* @internal */
+    export type AnyImportOrRequireStatement = AnyImportSyntax | RequireVariableStatement;
+
 
     /* @internal */
     export type AnyImportOrReExport = AnyImportSyntax | ExportDeclaration;
@@ -4357,8 +4361,17 @@ namespace ts {
 
     /* @internal */
     export interface RequireVariableDeclaration extends VariableDeclaration {
+        readonly initializer: RequireOrImportCall;
+    }
 
-        initializer: RequireOrImportCall;
+    /* @internal */
+    export interface RequireVariableStatement extends VariableStatement {
+        readonly declarationList: RequireVariableDeclarationList;
+    }
+
+    /* @internal */
+    export interface RequireVariableDeclarationList extends VariableDeclarationList {
+        readonly declarations: NodeArray<RequireVariableDeclaration>;
     }
 
     /* @internal */
