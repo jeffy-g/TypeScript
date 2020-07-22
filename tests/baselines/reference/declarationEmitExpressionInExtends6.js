@@ -3,7 +3,7 @@
 //// [index.d.ts]
 declare const require: any;
 
-//// [a.ts]
+//// [a.js]
 export class Foo {}
 
 //// [b.ts]
