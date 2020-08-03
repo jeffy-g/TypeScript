@@ -211,14 +211,20 @@ namespace ts {
 
     /* @internal */
     export const enum PackageJsonAutoImportPreference {
-        None,
-        ExcludeDevDependencies,
-        All
+        Off,
+        On,
+        Auto,
     }
 
     export interface PerformanceEvent {
         kind: "UpdateGraph" | "CreatePackageJsonAutoImportProvider";
         durationMs: number;
+    }
+
+    export enum LanguageServiceMode {
+        Semantic,
+        ApproximateSemanticOnly,
+        SyntaxOnly,
     }
 
     //
@@ -272,7 +278,7 @@ namespace ts {
         /* @internal */
         getGlobalTypingsCacheLocation?(): string | undefined;
         /* @internal */
-        getProbableSymlinks?(files: readonly SourceFile[]): ReadonlyESMap<string, string>;
+        getSymlinkCache?(files?: readonly SourceFile[]): SymlinkCache;
 
         /*
          * Required for full import and type reference completions.
