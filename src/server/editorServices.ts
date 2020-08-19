@@ -719,10 +719,10 @@ namespace ts.server {
             this.typesMapLocation = (opts.typesMapLocation === undefined) ? combinePaths(getDirectoryPath(this.getExecutingFilePath()), "typesMap.json") : opts.typesMapLocation;
             if (opts.serverMode !== undefined) {
                 this.serverMode = opts.serverMode;
-                this.syntaxOnly = this.serverMode === LanguageServiceMode.SyntaxOnly;
+                this.syntaxOnly = this.serverMode === LanguageServiceMode.Syntactic;
             }
             else if (opts.syntaxOnly) {
-                this.serverMode = LanguageServiceMode.SyntaxOnly;
+                this.serverMode = LanguageServiceMode.Syntactic;
                 this.syntaxOnly = true;
             }
             else {
@@ -3029,15 +3029,7 @@ namespace ts.server {
             let retainProjects: ConfiguredProject[] | ConfiguredProject | undefined;
             let projectForConfigFileDiag: ConfiguredProject | undefined;
             let defaultConfigProjectIsCreated = false;
-            if (this.serverMode === LanguageServiceMode.ApproximateSemanticOnly) {
-                // Invalidate resolutions in the file since this file is now open
-                info.containingProjects.forEach(project => {
-                    if (project.resolutionCache.removeRelativeNoResolveResolutionsOfFile(info.path)) {
-                        project.markAsDirty();
-                    }
-                });
-            }
-            else if (!project && this.serverMode === LanguageServiceMode.Semantic) { // Checking semantic mode is an optimization
+            if (!project && this.serverMode === LanguageServiceMode.Semantic) { // Checking semantic mode is an optimization
                 configFileName = this.getConfigFileNameForFile(info);
                 if (configFileName) {
                     project = this.findConfiguredProjectByProjectName(configFileName);
@@ -3123,10 +3115,6 @@ namespace ts.server {
                 }
                 Debug.assert(this.openFiles.has(info.path));
                 this.assignOrphanScriptInfoToInferredProject(info, this.openFiles.get(info.path));
-            }
-            else if (this.serverMode === LanguageServiceMode.ApproximateSemanticOnly && info.cacheSourceFile?.sourceFile.referencedFiles.length) {
-                // This file was just opened and references in this file will previously not been resolved so schedule update
-                info.containingProjects.forEach(project => project.markAsDirty());
             }
             Debug.assert(!info.isOrphan());
             return { configFileName, configFileErrors, retainProjects };
@@ -3774,12 +3762,10 @@ namespace ts.server {
         /*@internal*/
         getPackageJsonsVisibleToFile(fileName: string, rootDir?: string): readonly PackageJsonInfo[] {
             const packageJsonCache = this.packageJsonCache;
-            const watchPackageJsonFile = this.watchPackageJsonFile.bind(this);
-            const toPath = this.toPath.bind(this);
-            const rootPath = rootDir && toPath(rootDir);
-            const filePath = toPath(fileName);
+            const rootPath = rootDir && this.toPath(rootDir);
+            const filePath = this.toPath(fileName);
             const result: PackageJsonInfo[] = [];
-            forEachAncestorDirectory(getDirectoryPath(filePath), function processDirectory(directory): boolean | undefined {
+            const processDirectory = (directory: Path): boolean | undefined => {
                 switch (packageJsonCache.directoryHasPackageJson(directory)) {
                     // Sync and check same directory again
                     case Ternary.Maybe:
@@ -3788,15 +3774,16 @@ namespace ts.server {
                     // Check package.json
                     case Ternary.True:
                         const packageJsonFileName = combinePaths(directory, "package.json");
-                        watchPackageJsonFile(packageJsonFileName);
+                        this.watchPackageJsonFile(packageJsonFileName as Path);
                         const info = packageJsonCache.getInDirectory(directory);
                         if (info) result.push(info);
                 }
-                if (rootPath && rootPath === toPath(directory)) {
+                if (rootPath && rootPath === this.toPath(directory)) {
                     return true;
                 }
-            });
+            };
 
+            forEachAncestorDirectory(getDirectoryPath(filePath), processDirectory);
             return result;
         }
 

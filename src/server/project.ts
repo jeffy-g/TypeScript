@@ -283,11 +283,12 @@ namespace ts.server {
                 case LanguageServiceMode.Semantic:
                     this.languageServiceEnabled = true;
                     break;
-                case LanguageServiceMode.ApproximateSemanticOnly:
+                case LanguageServiceMode.PartialSemantic:
                     this.languageServiceEnabled = true;
+                    this.compilerOptions.noResolve = true;
                     this.compilerOptions.types = [];
                     break;
-                case LanguageServiceMode.SyntaxOnly:
+                case LanguageServiceMode.Syntactic:
                     this.languageServiceEnabled = false;
                     this.compilerOptions.noResolve = true;
                     this.compilerOptions.types = [];
@@ -310,7 +311,6 @@ namespace ts.server {
             this.resolutionCache = createResolutionCache(
                 this,
                 currentDirectory && this.currentDirectory,
-                projectService.serverMode === LanguageServiceMode.Semantic ? ResolutionKind.All : ResolutionKind.RelativeReferencesInOpenFileOnly,
                 /*logChangesWhenResolvingModule*/ true
             );
             this.languageService = createLanguageService(this, this.documentRegistry, this.projectService.serverMode);
@@ -464,20 +464,6 @@ namespace ts.server {
 
         resolveTypeReferenceDirectives(typeDirectiveNames: string[], containingFile: string, redirectedReference?: ResolvedProjectReference): (ResolvedTypeReferenceDirective | undefined)[] {
             return this.resolutionCache.resolveTypeReferenceDirectives(typeDirectiveNames, containingFile, redirectedReference);
-        }
-
-        /*@internal*/
-        includeTripleslashReferencesFrom(containingFile: string) {
-            switch (this.projectService.serverMode) {
-                case LanguageServiceMode.Semantic:
-                    return true;
-                case LanguageServiceMode.ApproximateSemanticOnly:
-                    return this.fileIsOpen(this.toPath(containingFile));
-                case LanguageServiceMode.SyntaxOnly:
-                    return false;
-                default:
-                    Debug.assertNever(this.projectService.serverMode);
-            }
         }
 
         directoryExists(path: string): boolean {
@@ -677,7 +663,7 @@ namespace ts.server {
         }
 
         enableLanguageService() {
-            if (this.languageServiceEnabled || this.projectService.serverMode === LanguageServiceMode.SyntaxOnly) {
+            if (this.languageServiceEnabled || this.projectService.serverMode === LanguageServiceMode.Syntactic) {
                 return;
             }
             this.languageServiceEnabled = true;
@@ -689,7 +675,7 @@ namespace ts.server {
             if (!this.languageServiceEnabled) {
                 return;
             }
-            Debug.assert(this.projectService.serverMode !== LanguageServiceMode.SyntaxOnly);
+            Debug.assert(this.projectService.serverMode !== LanguageServiceMode.Syntactic);
             this.languageService.cleanupSemanticCache();
             this.languageServiceEnabled = false;
             this.lastFileExceededProgramSize = lastFileExceededProgramSize;
