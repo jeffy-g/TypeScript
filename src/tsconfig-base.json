@@ -2,8 +2,8 @@
     "compilerOptions": {
         "pretty": true,
         "lib": ["es2015.iterable", "es2015.generator", "es5"],
-        "target": "es2019",
-        "moduleResolution": "classic",
+        "target": "es5",
+        "moduleResolution": "node",
         "rootDir": ".",
 
         "declaration": true,
