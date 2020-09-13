@@ -303,7 +303,7 @@ namespace ts.JsDoc {
      * @param name jsdoc tag (name)
      */
     // DEVNOTE: 2020/5/30 18:39:43 - The `isRecommended` property affects the fourslash test, so do not use it carelessly
-    const emitCompletionEntry = (name: string, kind = ScriptElementKind.jsDocTag) => ({ name, kind, kindModifiers: "", sortText: "0"/* , isRecommended: true */ }) as CompletionEntry;
+    const emitCompletionEntry = (name: string, kind = ScriptElementKind.jsDocTag) => ({ name, kind, kindModifiers: "", sortText: Completions.SortText.LocationPriority/* , isRecommended: true */ }) as CompletionEntry;
     /**
      * jsDocTag Completion Entry Emitter
      *
