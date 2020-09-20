@@ -139,6 +139,7 @@ function importDefinitelyTypedTests(tscPath: string, rwcTestPath: string, defini
 
                     if (testFiles.length === 0) {
                         // no test files but multiple d.ts's, e.g. winjs
+                        // DEVNOTE: recommended: new RegExp(d + "((-[0-9])|(\\.d\\.ts))");
                         const regexp = new RegExp(d + "(([-][0-9])|([\.]d[\.]ts))");
                         if (tsFiles.length > 1 && tsFiles.every(t => filePathEndsWith(t, ".d.ts") && regexp.test(t))) {
                             for (const fileName of tsFiles) {
