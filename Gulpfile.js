@@ -429,7 +429,18 @@ task("other-outputs").description = "Builds miscelaneous scripts and documents d
 
 const buildFoldStart = async () => { if (fold.isTravis()) console.log(fold.start("build")); };
 const buildFoldEnd = async () => { if (fold.isTravis()) console.log(fold.end("build")); };
-task("local", series(buildFoldStart, preBuild, parallel(localize, buildTsc, buildServer, buildServices, buildLssl, buildOtherOutputs), buildFoldEnd));
+
+
+const copyBuiltLocalPackageConfig = () => src(["./package-local.json", "./bin/bin-local/*"])
+    .pipe(rename(path => {
+        if (path.extname === ".json") {
+            path.basename = "package";
+        } else {
+            path.dirname = "bin";
+        }
+    }))
+    .pipe(dest("built/local"));
+task("local", series(buildFoldStart, preBuild, parallel(localize, buildTsc, buildServer, buildServices, buildLssl, buildOtherOutputs, copyBuiltLocalPackageConfig), buildFoldEnd));
 task("local").description = "Builds the full compiler and services";
 task("local").flags = {
     "   --built": "Compile using the built version of the compiler."
