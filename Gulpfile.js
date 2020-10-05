@@ -431,15 +431,16 @@ const buildFoldStart = async () => { if (fold.isTravis()) console.log(fold.start
 const buildFoldEnd = async () => { if (fold.isTravis()) console.log(fold.end("build")); };
 
 
-const copyBuiltLocalPackageConfig = () => src(["./package-local.json", "./bin/bin-local/*"])
+const copyBuiltLocalPackageConfig = () => src(["./{package-local.json,bin/*}"])
     .pipe(rename(path => {
         if (path.extname === ".json") {
             path.basename = "package";
-        } else {
-            path.dirname = "bin";
         }
+        // else {
+        //     path.dirname = "bin";
+        // }
     }))
-    .pipe(dest("built/local"));
+    .pipe(dest("built"));
 task("local", series(buildFoldStart, preBuild, parallel(localize, buildTsc, buildServer, buildServices, buildLssl, buildOtherOutputs, copyBuiltLocalPackageConfig), buildFoldEnd));
 task("local").description = "Builds the full compiler and services";
 task("local").flags = {
